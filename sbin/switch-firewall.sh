@@ -1,4 +1,5 @@
 #!/bin/sh
+# Copyright (c) 2012 David Hauweele <david@hauweele.net>
 
 # Command line
 if [ -z "$1" ]
