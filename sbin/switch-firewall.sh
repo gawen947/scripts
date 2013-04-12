@@ -13,8 +13,8 @@ fi
 profil=$(echo $profil | tr -dc "[a-z]")
 
 # Profil check
-path=/etc/firewall/$profil
-if [ ! -x "$path" ]
+firewall_path=/etc/firewall/$profil
+if [ ! -x "$firewall_path" ]
 then
   echo "error: profil \"$profil\" does not exist"
   exit 1
@@ -33,7 +33,7 @@ ip6tables -X
 echo "done!"
 
 echo "Switch to" $profil
-newcmd=$path
+newcmd=$firewall_path
 i=0
 for arg in $*
 do
