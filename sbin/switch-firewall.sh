@@ -29,19 +29,18 @@ iptables -F
 iptables -X
 ip6tables -F
 ip6tables -X
-#iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 echo "done!"
 
 echo "Switch to" $profil
 newcmd=$firewall_path
-i=0
+
 for arg in $*
 do
   if [ $i != 0 ]
   then
     newcmd="$newcmd $arg"
   fi
-  i=$(gcalc $i 1 +)
 done
+
 $newcmd
 echo "$profil" > /etc/firewall.current
