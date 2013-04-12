@@ -1,30 +1,13 @@
 #!/bin/sh
 # Copyright (c) 2013 David Hauweele <david@hauweele.net>
 
-# This script links targets to the original file in the repository.
-# This way the git's cloner could either contribute to the project
-# or install each script manually... Ahaha I'm such an evil person!
-# No just kidding... As it would poses a grave security risk, it's
-# possible to install everything by copying the file instead.
-# One may do so by passing "copy" as the first argument.
-
-
 if [ "$(whoami)" != root ]
 then
   echo "error: this should be run as root"
   exit 1
 fi
 
-dir=$(pwd)
-
-if [ "$1" = copy ]
-then
-  echo "Install by copy."
-  cmd="cp"
-else
-  echo "Install by link."
-  cmd="ln -s"
-fi
+dir="$(pwd)"
 
 do_install() (
   if [ "$4" != "no-ext" ]
@@ -37,7 +20,8 @@ do_install() (
 
   echo -n "Install $base... "
   rm -f $2/$base
-  $cmd $dir/$1/$3 $2/$base
+  cp $dir/$1/$3 $2/$base
+  chown root:staff $2/$base
   echo "done."
 )
 
