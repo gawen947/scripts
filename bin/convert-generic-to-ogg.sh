@@ -1,4 +1,5 @@
 #!/bin/sh
+# Copyright (c) 2011 David Hauweele <david@hauweele.net>
 
 if [ "$#" = "2" ]
 then
