@@ -1,7 +1,7 @@
 #!/bin/sh
 # Copyright (c) 2013 David Hauweele
 
-ext=$(echo "$1" | grep -E -o "\.[[:alnum:]]+(\.[[:alnum:]]+)?")
+ext=$(echo "$1" | grep -E -o "\.[[:alnum:]]+(\.[[:alnum:]]+)?$")
 name=$(basename "$1" "$ext")
 
 case "$ext" in
@@ -50,6 +50,7 @@ o_pwd=$(pwd)
 cd $dir
 sar -${comp}cvvvf $name.sar$sext *
 cd $o_pwd
+mv $dir/$name.sar$sext .
 echo "OK!"
 echo ""
 
