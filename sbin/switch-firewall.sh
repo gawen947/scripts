@@ -29,11 +29,11 @@ iptables -F
 iptables -X
 ip6tables -F
 ip6tables -X
-#iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 echo "done!"
 
 echo "Switch to" $profil
 newcmd=$firewall_path
+
 i=0
 for arg in $*
 do
@@ -41,7 +41,12 @@ do
   then
     newcmd="$newcmd $arg"
   fi
+
+  # This increment is needed, it is
+  # used to isolate the first argument.
   i=$(gcalc $i 1 +)
 done
+
+# Call the constructed command which is the firewall profil
 $newcmd
 echo "$profil" > /etc/firewall.current
