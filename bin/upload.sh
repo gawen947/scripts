@@ -1,4 +1,5 @@
 #!/bin/sh
+# Copyright (c) 2013 David Hauweele <david@hauweele.net>
 
 UP_URL="bilbo.hauweele.net"
 UP_PATH="public_html/upload"
