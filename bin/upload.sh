@@ -24,9 +24,10 @@ fi
 # But it should avoid collision in
 # most cases.
 crc=$(crc32 "$file" | cut -d' ' -f1)
-size=$(sizeof "$file" | cut -d':' -f2)
+size=$(sizeof -a "$file" | cut -d':' -f2)
 upnum=${size}${crc}
 upname=$(echo "$upnum" | base -O "$BASE")
+echo "$upname"
 
 rsync --progress --chmod=a+r "$file" $UP_URL:$UP_PATH/$upname
 
