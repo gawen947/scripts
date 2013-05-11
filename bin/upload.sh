@@ -4,7 +4,7 @@
 UP_URL="bilbo.hauweele.net"
 UP_PATH="public_html/upload"
 DOWN_URL="http://www.hauweele.net/~gawen/upload"
-BASE="abcdefghijklmnopqrstuvwxyz0123456789"
+BASE="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 if [ $# != 1 ]
 then
