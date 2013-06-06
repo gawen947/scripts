@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright (c) 2013 David Hauweele <david@hauweele.net>
-
+ 
 if [ "$(whoami)" != root ]
 then
   echo "error: this should be run as root"
