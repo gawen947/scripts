@@ -58,7 +58,7 @@ upnum=${size}${crc}
 upname=$(echo "$upnum" | base -O "$BASE")
 
 rsync --progress --chmod=a+r "$file" $UP_URL:$UP_PATH/$upname
-ssh $UP_URL "echo $upname $ttl >> ~/.uploaded-ttl"
+ssh $UP_URL "echo $upname $ttl >> ~/.uploaded-limit"
 
 echo ""
 echo "Uploaded:"
