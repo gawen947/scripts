@@ -1,11 +1,6 @@
 #!/bin/sh
 # Copyright (c) 2011-2013 David Hauweele <david@hauweele.net>
 
-# Default values
-MAX_VOLUME=100
-MIN_VOLUME=0
-METHOD=pulse
-
 CONFIGURATION=$HOME/.volume
 if [ -r "$CONFIGURATION" ]
 then
@@ -14,6 +9,41 @@ else
   echo "Cannot read the configuration file at '$CONFIGURATION'."
   exit 1
 fi
+
+DISPLAY_PID="/tmp/.volume.aosd_$(hostname)_$USER.pid"
+
+display() (
+  if [ "$OSD" = false ]
+  then
+    exit 0
+  fi
+
+  if [ -r "$DISPLAY_PID" ]
+  then
+    kill -TERM $(cat "$DISPLAY_PID")
+  fi
+
+  type=$1
+  value=$2
+
+  case "$1" in
+    volume)
+      echo $OSD_TEXT_VOLUME | sed "s/##VALUE##/$value/" | $OSD_VOLUME &;;
+    off)
+      echo $OSD_TEXT_OFF | $OSD_OFF &;;
+    on)
+      echo $OSD_TEXT_ON | $OSD_ON &;;
+    *)
+      echo "error: unknown type";;
+  esac
+
+  pid=$!
+  echo $pid > "$DISPLAY_PID"
+  if wait $pid
+  then
+    rm "$DISPLAY_PID"
+  fi
+)
 
 check_volume() (
   volume=$1
@@ -41,6 +71,7 @@ pulse_audio() (
   target_volume=$(check_volume $target_volume)
 
   pactl set-sink-volume "$SINK" "$target_volume%"
+  display volume "$target_volume" &
 )
 
 # These commands switch the mute value
@@ -55,9 +86,11 @@ pulse_audio_mute() (
   if [ "$muted" = "muted: yes" ]
   then
     target_mute=0
+    display on &
   elif [ "$muted" = "muted: no" ]
   then
     target_mute=1
+    display off &
   else
     echo "error: cannot extract muted value"
     exit 1
