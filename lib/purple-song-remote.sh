@@ -17,7 +17,7 @@ case "$type" in
     remote_call "$title" "(8) $album - $title"
     ;;
   end)
-    remote_call "$title" ""
+    remote_call "*" ""
     ;;
   end-list)
     remote_call "*" ""
