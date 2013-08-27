@@ -28,11 +28,11 @@ display() (
 
   case "$1" in
     volume)
-      echo $OSD_TEXT_VOLUME | sed "s/##VALUE##/$value/" | $OSD_VOLUME &;;
+      echo $OSD_TEXT_VOLUME | sed "s/##VALUE##/$value/" | $OSD_VOLUME --font="$OSD_FONT" &;;
     off)
-      echo $OSD_TEXT_OFF | $OSD_OFF &;;
+      echo $OSD_TEXT_OFF | $OSD_OFF --font="$OSD_FONT" &;;
     on)
-      echo $OSD_TEXT_ON | $OSD_ON &;;
+      echo $OSD_TEXT_ON | $OSD_ON --font="$OSD_FONT" &;;
     *)
       echo "error: unknown type";;
   esac
