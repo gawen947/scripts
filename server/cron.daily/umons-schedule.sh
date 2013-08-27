@@ -1,4 +1,5 @@
 #!/bin/sh
+# Copyright (c) 2013 David Hauweele <david@hauweele.net>
 
 . /etc/umons-schedule.conf
 
