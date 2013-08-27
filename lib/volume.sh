@@ -119,5 +119,15 @@ if [ "$1" = switch ]
 then
   $vol_mute || exit 1
 else
-  $vol_cmd "$1"
+  if [ "$1" = "+" ]
+  then
+    value="+$INCREMENT"
+  elif [ "$1" = "-" ]
+  then
+    value="-$INCREMENT"
+  else
+    value="$1"
+  fi
+
+  $vol_cmd "$value"
 fi
