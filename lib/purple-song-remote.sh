@@ -8,7 +8,9 @@ remote_call() (
   then
     exit 0
   else
-    purple-remote "setstatus?message=$2"
+    message="$2"
+    message=$(echo "$message" | sed 's/&/and/g')
+    purple-remote "setstatus?message=$message"
   fi
 )
 
