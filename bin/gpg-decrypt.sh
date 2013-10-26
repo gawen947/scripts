@@ -13,7 +13,7 @@ cp $tempf $messf; rm $tempf
 
 if [ -s $messf ]
 then
-  gpg -d $messf > $outpf
+  gpg2 -d $messf > $outpf
   read null
   vim $outpf
 else

@@ -36,7 +36,7 @@ cp $temp $messf; rm $temp
 
 if [ -n "$send" -a -n "$dest" -a -s $messf ]
 then
-  gpg -esa -u "$send" -r "$dest" $messf
+  gpg2 -esa -u "$send" -r "$dest" $messf
   vim $messf.asc
   rm $messf.asc
 else
