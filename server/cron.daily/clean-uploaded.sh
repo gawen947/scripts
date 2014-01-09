@@ -36,5 +36,6 @@ do
   mv $tmp_umf $umf
   chown $user:$user $ulf
   chown $user:$user $umf
+  chmod 644 $umf
 done
 
