@@ -29,7 +29,7 @@ do_print() (
 
 do_print even
 
-if zenity --question --text "Waiting for the documents on ${printer}...\n\nNote that it may won't print any page at all. In that case this may be because the document only has one page so you may safely continue from here.\n\nYou may also cancel the impression at this point." --ok-label "Print" --cancel-label "Cancel" --title "Waiting on ${printer}"
+if zenity --question --text "We are now waiting for the back pages of the documents to be printed on ${printer}...\n\nWhen the pages are successfully printed, please prepare the documents in the printer for printing the front pages and press ready to start printing the front pages.\n\nNote that it may won't print any page at all. In that case this may be because the document only has one page so you may safely continue from here.\n\nYou may also cancel the impression at this point." --ok-label "Ready" --cancel-label "Cancel" --title "Waiting on ${printer}"
 then
   do_print odd
 fi
