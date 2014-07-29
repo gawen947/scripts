@@ -14,10 +14,10 @@ then
   exit 1
 fi
 
-authf=$(tempfile)
-ssidf=$(tempfile)
-pskf=$(tempfile)
-hiddenf=$(tempfile)
+authf=$(mktemp)
+ssidf=$(mktemp)
+pskf=$(mktemp)
+hiddenf=$(mktemp)
 
 echo "nopass" >> $authf
 echo "############################" >> $authf
@@ -74,7 +74,7 @@ else
   hidden=""
 fi
 
-qrcodef=$(tempfile)
+qrcodef=$(mktemp)
 qrencode -s 10 -t png -o $qrcodef "WIFI:T:$auth;S:$ssid;P:$psk;$hidden;"
 feh $qrcodef
 rm $qrcodef

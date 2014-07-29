@@ -8,7 +8,7 @@ do
   url=$(echo $line | cut -d' ' -f 1)
   out=$(echo $line | cut -d' ' -f 2)
 
-  tmp=$(tempfile)
+  tmp=$(mktemp)
   wget "$url" -O $tmp > /dev/null 2>&1
 
   # Clean the file

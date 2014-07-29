@@ -1,7 +1,7 @@
 #!/bin/sh
-messf=$(tempfile)
-outpf=$(tempfile)
-tempf=$(tempfile)
+messf=$(mktemp)
+outpf=$(mktemp)
+tempf=$(mktemp)
 echo "" >> $messf
 echo "###################################" >> $messf
 echo "# Enter the received message here #" >> $messf

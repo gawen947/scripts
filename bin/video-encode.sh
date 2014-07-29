@@ -65,7 +65,9 @@ basefile=$(basename "$file")
 cd "$basedir"
 mkdir -p ".encoded"
 noextension=$(basename "$basefile" .$(echo "$basefile" | awk -F . '{print $NF}'))
-newfile=$(mktemp -u "$noextension-encoding-XXXXXX.mkv")
+newfile=$(mktemp -u "$noextension-encoding-XXXXXXXXXX")
+rm -f "$newfile"
+newfile=${newfile}.mkv
 cmd="ffmpeg -i \"$basefile\" $v_part $a_part \"$newfile\""
 echo $cmd
 eval $cmd

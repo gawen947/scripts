@@ -1,8 +1,8 @@
 #!/bin/sh
-sendf=$(tempfile)
-destf=$(tempfile)
-messf=$(tempfile)
-temp=$(tempfile)
+sendf=$(mktemp)
+destf=$(mktemp)
+messf=$(mktemp)
+temp=$(mktemp)
 
 echo "$GPG_DEFAULT_KEY" >> $sendf
 echo "#################################" >> $sendf

@@ -19,8 +19,10 @@ date=$(echo "$info" | grep "Recorded date" | head -n1 | sed "s/.*: //")
 genre=$(echo "$info" | grep "Genre" | head -n1 | sed "s/.*: //")
 track=$(echo "$info" | grep "Track name/Position" | head -n1 | sed "s/.*: //")
 
-tmp=$(mktemp tmpXXXXXX.wav)
+tmp=$(TMPDIR=. mktemp)
 rm $tmp
+tmp=${tmp}.wav
+
 ffmpeg -i "$1" $tmp
 oggenc -t "$title" -a "$artist" -G "$genre" -l "$album" -d "$date" -n "$track" -o "$a.ogg" -q $qual $tmp
 rm $tmp

@@ -13,8 +13,8 @@ do
     continue
   fi
 
-  tmp_ulf=$(tempfile)
-  tmp_umf=$(tempfile)
+  tmp_ulf=$(mktemp)
+  tmp_umf=$(mktemp)
   while read line
   do
     file=$(echo $line | cut -d' ' -f 1)

@@ -30,8 +30,8 @@ case "$ext" in
     ;;
 esac
 
-dir=$(mktemp -d tmpXXXXXX)
- 
+dir=$(TMPDIR=. mktemp)
+
 echo "Decompress..."
 tar -C $dir -${comp}xvf "$1"
 echo "OK!"

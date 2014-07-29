@@ -1,7 +1,7 @@
 #!/bin/sh
 # Copyright (c) 2013 David Hauweele <david@hauweele.net>
 
-pids=$(tempfile)
+pids=$(mktemp)
 
 error() (
   echo "error: " $1
