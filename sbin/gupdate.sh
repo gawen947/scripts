@@ -45,7 +45,7 @@ case "$method" in
     ;;
   pkgng_portmaster)
     $0 pkg
-    $0 portmaster
+    $0 port
     ;;
   *)
     echo "Invalid method!"
