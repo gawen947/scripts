@@ -16,7 +16,7 @@ do_sha1()
   esac
 )
 
-o_pwd=$(pwd)
+o_pwd="$(pwd)"
 tmp=$(mktemp)
 tmp2=$(mktemp)
 sitecache=$(mktemp)
@@ -34,6 +34,8 @@ do
   else
     echo -n "Refreshing... "
     basefile=$(basename $file .xml).html
+    sed -i .unused 's/\.xml/\.html/g' "$tmp"
+    rm "${tmp}.unused"
     cp "$tmp" "$basefile"
     chmod a+r "$basefile"
 
@@ -43,8 +45,8 @@ do
     echo "Done!"
   fi
 done
-cp $sitecache $HOME/.site-cache
-rm $tmp
-rm $tmp2
-rm $sitecache
-cd $o_pwd
+cp "$sitecache" $HOME/.site-cache
+rm "$tmp"
+rm "$tmp2"
+rm "$sitecache"
+cd "$o_pwd"
