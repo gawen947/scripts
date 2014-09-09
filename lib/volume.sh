@@ -67,7 +67,7 @@ pulse_audio() (
   # Get the current volume in percent
   current_volume=$(pacmd dump-volumes | grep "Sink $SINK" | cut -d':' -f 3 | grep -E -o "[[:digit:]]+" | head -n 1)
 
-  target_volume=$(gcalc $current_volume $add +)
+  target_volume=$(rpnc $current_volume $add +)
   target_volume=$(check_volume $target_volume)
 
   pactl set-sink-volume "$SINK" "$target_volume%"

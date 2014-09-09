@@ -31,7 +31,7 @@ then
   aqual=2
 fi
 
-mvqual=$(gcalc $vqual 3 .)k
+mvqual=$(rpnc $vqual 3 .)k
 vqual=${vqual}k
 case "$vcodec"
   in

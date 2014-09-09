@@ -44,7 +44,7 @@ case "$ttl_unit" in
 esac
 
 ttl=$(echo $ttl | sed "s/$ttl_unit//")
-ttl=$(gcalc $(date +"%s") $ttl $factor . +)
+ttl=$(rpnc $(date +"%s") $ttl $factor . +)
 
 if [ ! -r "$file" ]
 then

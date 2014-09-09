@@ -44,7 +44,7 @@ do
 
   # This increment is needed, it is
   # used to isolate the first argument.
-  i=$(gcalc $i 1 +)
+  i=$(rpnc $i 1 +)
 done
 
 # Call the constructed command which is the firewall profil
