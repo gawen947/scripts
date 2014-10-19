@@ -18,6 +18,9 @@ ORIGINAL_SIZE_REDUX=2048
 THUMB_MAX_WIDTH=640
 THUMB_MAX_HEIGHT=480
 
+ENABLE_HEAD=false
+ENABLE_FOOT=true
+
 test_requirements() (
   if ! which "$1" > /dev/null
   then
@@ -176,8 +179,15 @@ echo "### HEAD ###" >> $head_tmp
 echo "" > $foot_tmp
 echo "### FOOT ###" >> $foot_tmp
 
-vim $head_tmp
-vim $foot_tmp
+if $ENABLE_HEAD
+then
+  vim $head_tmp
+fi
+
+if $ENABLE_FOOT
+then
+  vim $foot_tmp
+fi
 
 but_last_line() (
   head -$(rpnc $(wc -l "$1" | awk '{ print $1 }') 1 -) "$1"
