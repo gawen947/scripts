@@ -102,19 +102,8 @@ original_img=${new_base}_o.${extension}
 
 # Alias the identify command for GIFs
 case "$extension" in
-  gif)
-    get_geom() (
-      if [ -L "$1" ]
-      then
-        image=$(readlink "$1")
-      else
-        image=$1
-      fi
-
-      identify -format "%wx%h\n" "$image" | head -n1 | tr -d '\n'
-    )
-    ;;
-  *) get_geom() (identify -format "%wx%h" "$1");;
+  gif) get_geom() (identify -format "%wx%h\n" "$1" | head -n1 | tr -d '\n');;
+  *)   get_geom() (identify -format "%wx%h"   "$1");;
 esac
 
 # Identify the image size
@@ -180,7 +169,7 @@ echo -n "Resize thumbnail... "
 
 if [ "$extension" = "gif" ]
 then
-  ln -s "${TARGET}/$original_img" "${TARGET}/$thumb_img"
+  ln -s "$original_img" "${TARGET}/$thumb_img"
   echo "not needed (GIF)"
 else
   convert "$img" -resize $resize_arg "${TARGET}/$thumb_img"
