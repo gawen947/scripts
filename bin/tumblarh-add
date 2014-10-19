@@ -215,8 +215,8 @@ escaped_name=$(echo "$name" | sed 's/:/%SC/g')
 echo $(date +%s):$escaped_name:$new_base:$(get_geom "$img"):$(get_geom "${TARGET}/$original_img"):$(get_geom "${TARGET}/$thumb_img"):${thumb_width}x${thumb_height}:$extension >> ${TARGET}/INDEX
 
 # Create the "search"-links
-ln -s "${TARGET}/$name_file"    "${TARGET}/name/$new_base"
-ln -s "${TARGET}/$head"         "${TARGET}/head/$new_base"
-ln -s "${TARGET}/$foot"         "${TARGET}/foot/$new_base"
-ln -s "${TARGET}/$original_img" "${TARGET}/original/$new_base"
-ln -s "${TARGET}/$thumb_img"    "${TARGET}/thumbnail/$new_base"
+ln -s "../$name_file"    "${TARGET}/name/$new_base"
+ln -s "../$head"         "${TARGET}/head/$new_base"
+ln -s "../$foot"         "${TARGET}/foot/$new_base"
+ln -s "../$original_img" "${TARGET}/original/$new_base"
+ln -s "../$thumb_img"    "${TARGET}/thumbnail/$new_base"
