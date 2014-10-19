@@ -100,8 +100,25 @@ foot=${new_base}_f
 thumb_img=${new_base}_t.${extension}
 original_img=${new_base}_o.${extension}
 
+# Alias the identify command for GIFs
+case "$extension" in
+  gif)
+    get_geom() (
+      if [ -L "$1" ]
+      then
+        image=$(readlink "$1")
+      else
+        image=$1
+      fi
+
+      identify -format "%wx%h\n" "$image" | head -n1 | tr -d '\n'
+    )
+    ;;
+  *) get_geom() (identify -format "%wx%h" "$1");;
+esac
+
 # Identify the image size
-geom=$(identify -format %wx%h "$img")
+geom=$(get_geom "$img")
 original_width=$(echo "$geom" | cut -d'x' -f1)
 original_height=$(echo "$geom" | cut -d'x' -f2)
 original_size=$(sizeof -a "$img" | cut -d':' -f2)
@@ -205,7 +222,7 @@ echo "$name" > "${TARGET}/$name_file"
 # Save the inde
 
 # date:new-base:orig-geom:resized-orig-geom:thumb-geom:wanted-geom:extension
-echo $(date +%s):$new_base:$(identify -format %wx%h "$img"):$(identify -format %wx%h "${TARGET}/$original_img"):$(identify -format %wx%h "${TARGET}/$thumb_img"):${thumb_width}x${thumb_height}:$extension >> ${TARGET}/INDEX
+echo $(date +%s):$new_base:$(get_geom "$img"):$(get_geom "${TARGET}/$original_img"):$(get_geom "${TARGET}/$thumb_img"):${thumb_width}x${thumb_height}:$extension >> ${TARGET}/INDEX
 
 # Create the "search"-links
 ln -s "${TARGET}/$name_file"    "${TARGET}/name/$new_base"
