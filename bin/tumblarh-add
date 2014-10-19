@@ -208,7 +208,7 @@ rm $head_tmp $foot_tmp
 # Save the name
 echo "$name" > "${TARGET}/$name_file"
 
-# Save the inde
+# Save the index
 
 # date:new-base:orig-geom:resized-orig-geom:thumb-geom:wanted-geom:extension
 echo $(date +%s):$new_base:$(get_geom "$img"):$(get_geom "${TARGET}/$original_img"):$(get_geom "${TARGET}/$thumb_img"):${thumb_width}x${thumb_height}:$extension >> ${TARGET}/INDEX
