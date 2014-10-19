@@ -163,6 +163,7 @@ echo -n "Resize thumbnail... "
 
 if [ "$extension" = "gif" ]
 then
+  cp "$img" "${TARGET}/$thumb_img"
   echo "not needed (GIF)"
 else
   convert "$img" -resize $resize_arg "${TARGET}/$thumb_img"
