@@ -37,15 +37,24 @@ esac
 get_w() (echo "$1" | cut -d'x' -f1)
 get_h() (echo "$1" | cut -d'x' -f2)
 
-esc_sed='s/\//\\\//g'
+esc_sed() (
+  sed 's/\\/\\\\/g' | \
+  sed 's/\//\\\//g' | \
+  sed 's/\./\\\./g' | \
+  sed 's/\*/\\\*/g' | \
+  sed 's/\?/\\\?/g' | \
+  sed 's/\[/\\\[/g' | \
+  sed 's/\]/\\\]/g' | \
+  tr '\n' ' '
+)
 
 cat "$TARGET/INDEX" | sort -t':' -rn -k1 | while read line
 do
   post_date=$(echo "$line" | cut -d':' -f 1)
   post_base=$(echo "$line" | cut -d':' -f 3)
-  post_name=$(cat "$TARGET/${post_base}_n" | sed "$esc_sed")
-  post_head=$(cat "$TARGET/${post_base}_h" | sed "$esc_sed")
-  post_foot=$(cat "$TARGET/${post_base}_f" | sed "$esc_sed")
+  post_name=$(cat "$TARGET/${post_base}_n" | esc_sed)
+  post_head=$(cat "$TARGET/${post_base}_h" | esc_sed)
+  post_foot=$(cat "$TARGET/${post_base}_f" | esc_sed)
 
   post_orig_geom=$(echo "$line" | cut -d':' -f 4)
   post_resized_orig_geom=$(echo "$line" | cut -d':' -f 5)
@@ -54,10 +63,10 @@ do
 
   post_extension=$(echo "$line" | cut -d':' -f 8)
 
-  post_original_img=$(echo "$TARGET/${post_base}_o.${post_extension}" | sed "$esc_sed")
-  post_thumb_img=$(echo "$TARGET/${post_base}_t.${post_extension}" | sed "$esc_sed")
+  post_original_img=$(echo "$TARGET/${post_base}_o.${post_extension}" | esc_sed)
+  post_thumb_img=$(echo "$TARGET/${post_base}_t.${post_extension}" | esc_sed)
 
-  post_converted_date=$(convert_timestamp "$post_date" | sed "$esc_sed")
+  post_converted_date=$(convert_timestamp "$post_date" | esc_sed)
 
   cat "$post_template" | \
     sed "s/{{{HEAD}}}/$post_head/g" | \
