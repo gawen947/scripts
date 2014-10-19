@@ -4,7 +4,7 @@
 
 DATE_FORMAT=%c
 
-if [ $# != "3" ]
+if [ $# != "4" ]
 then
   echo "usage: $0 PAGE-HEADER PAGE-FOOT POST-TEMPLATE TARGET"
   exit 1
