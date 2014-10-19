@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# Copyright (c) 2014 David Hauweele <david@hauweele.net>
+
+if [ $# != 3 ]
+then
+  echo "usage: $0 [URL] [NAME] [IMG]"
+  exit 1
+fi
+
+url=$1
+name=$2
+img_path=$3
+img_base=$(basename "$3")
+
+scp "$img_path" "$url":~
+ssh "$url" -t "./tumblarh-quick \"$name\" \"$img_base\""
