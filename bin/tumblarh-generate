@@ -1,0 +1,84 @@
+#!/bin/sh
+#
+# Copyright (c) 2014 David Hauweele <david@hauweele.net>
+
+DATE_FORMAT=%c
+
+if [ $# != "3" ]
+then
+  echo "usage: $0 PAGE-HEADER PAGE-FOOT POST-TEMPLATE TARGET"
+  exit 1
+fi
+
+page_header=$1
+page_foot=$2
+post_template=$3
+TARGET=$4
+
+if [ ! -r "$TARGET/INDEX" ]
+then
+  echo "error: index file does not exist."
+  exit 1
+fi
+
+cat "$page_header"
+
+case "$(uname -s)" in
+  FreeBSD)
+    convert_timestamp() (date -j -f"%s" "$1" +"$DATE_FORMAT");;
+  Linux)
+    convert_timestamp() (date -d "@$1" +"$DATE_FORMAT");;
+  *)
+    echo "Unknown operating system..."
+    echo "How can I change a timestamp into a date?"
+    ;;
+esac
+
+get_w() (echo "$1" | cut -d'x' -f1)
+get_h() (echo "$1" | cut -d'x' -f2)
+
+esc_sed='s/\//\\\//g'
+
+cat "$TARGET/INDEX" | sort -t':' -rn -k1 | while read line
+do
+  post_date=$(echo "$line" | cut -d':' -f 1)
+  post_base=$(echo "$line" | cut -d':' -f 2)
+  post_name=$(cat "$TARGET/${post_base}_n" | sed "$esc_sed")
+  post_head=$(cat "$TARGET/${post_base}_h" | sed "$esc_sed")
+  post_foot=$(cat "$TARGET/${post_base}_f" | sed "$esc_sed")
+
+  post_orig_geom=$(echo "$line" | cut -d':' -f 3)
+  post_resized_orig_geom=$(echo "$line" | cut -d':' -f 4)
+  post_thumb_geom=$(echo "$line" | cut -d':' -f 5)
+  post_wanted_geom=$(echo "$line" | cut -d':' -f 6)
+
+  post_extension=$(echo "$line" | cut -d':' -f 7)
+
+  post_original_img=$(echo "$TARGET/${post_base}_o.${post_extension}" | sed "$esc_sed")
+  post_thumb_img=$(echo "$TARGET/${post_base}_t.${post_extension}" | sed "$esc_sed")
+
+  post_converted_date=$(convert_timestamp "$post_date" | sed "$esc_sed")
+
+  cat "$post_template" | \
+    sed "s/{{{HEAD}}}/$post_head/g" | \
+    sed "s/{{{FOOT}}}/$post_foot/g" | \
+    sed "s/{{{NAME}}}/$post_name/g" | \
+    sed "s/{{{ORIG-URL}}}/$post_original_img/g" | \
+    sed "s/{{{THUMB-URL}}}/$post_thumb_img/g" | \
+    sed "s/{{{STAMP}}}/$post_date/g" | \
+    sed "s/{{{DATE}}}/$post_converted_date/g" | \
+    sed "s/{{{REAL-GEOM}}}/$post_orig_geom/g" | \
+    sed "s/{{{REAL-WIDTH}}}/$(get_w $post_orig_geom)/g" | \
+    sed "s/{{{REAL-HEIGHT}}}/$(get_h $post_orig_geom)/g" | \
+    sed "s/{{{ORIG-GEOM}}}/$post_resized_orig_geom/g" | \
+    sed "s/{{{ORIG-WIDTH}}}/$(get_w $post_resized_orig_geom)/g" | \
+    sed "s/{{{ORIG-HEIGHT}}}/$(get_h $post_resized_orig_geom)/g" | \
+    sed "s/{{{THUMB-GEOM}}}/$post_thumb_geom/g" | \
+    sed "s/{{{THUMB-WIDTH}}}/$(get_w $post_thumb_geom)/g" | \
+    sed "s/{{{THUMB-HEIGHT}}}/$(get_h $post_thumb_geom)/g" | \
+    sed "s/{{{WANTED-GEOM}}}/$post_wanted_geom/g" | \
+    sed "s/{{{WANTED-WIDTH}}}/$(get_w $post_wanted_geom)/g" | \
+    sed "s/{{{WANTED-HEIGHT}}}/$(get_h $post_wanted_geom)/g"
+done
+
+cat "$page_foot"

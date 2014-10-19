@@ -1,0 +1,204 @@
+#!/bin/sh
+#
+# Copyright (c) 2014 David Hauweele <david@hauweele.net>
+
+#TARGET=$HOME/public_html/tumblarh
+TARGET=./test-dir
+BASE="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+# Max file size without resize for the original
+ORIGINAL_SIZE_MAX=524288
+
+# Side size (height/width) for the resized original
+ORIGINAL_SIZE_REDUX=2048
+
+# Image are reduced when one of their side (height/width)
+# is greater than these value. The longest side is reduced
+# to its maximum value.
+THUMB_MAX_WIDTH=640
+THUMB_MAX_HEIGHT=480
+
+test_requirements() (
+  if ! which "$1" > /dev/null
+  then
+    echo "error: cannot find command $1"
+    exit 1
+  fi
+)
+
+for command in convert identify crc32 sizeof rpnc mktemp vim
+do
+  test_requirements "$command" || exit 1
+done
+
+if [ $# != "2" ]
+then
+  echo "usage: $0 NAME IMAGE"
+  exit 1
+fi
+
+do_sha1()
+(
+  case "$(uname -s)" in
+    FreeBSD)
+      sha1 "$1" | cut -d'=' -f 2 | sed 's/^ *//';;
+    Linux)
+      sha1sum "$1" | cut -d' ' -f 1 | sed 's/^ *//';;
+    *)
+      echo "Unknown operating system..."
+      echo "How can I hash a file?"
+      exit 1
+      ;;
+  esac
+)
+
+name=$1
+img=$2
+
+if [ ! -f "$img" ]
+then
+  echo "error: cannot find '$img'"
+  exit 1
+fi
+
+# Check directory structure
+mkdir_if_not_exist() (
+  if [ ! -d "$1" ]
+  then
+    mkdir -p "$1"
+  fi
+)
+
+mkdir_if_not_exist "$TARGET"
+mkdir_if_not_exist "$TARGET/name"
+mkdir_if_not_exist "$TARGET/head"
+mkdir_if_not_exist "$TARGET/foot"
+mkdir_if_not_exist "$TARGET/original"
+mkdir_if_not_exist "$TARGET/thumbnail"
+
+# Compute the target file names.
+extension=$(echo "$img" |awk -F . '{ print $NF }' | tr '[:upper:]' '[:lower:]')
+base=$(basename "$img" "$extension")
+
+compute_newbase() (
+  crc=$(crc32 "$1" | cut -d' ' -f1)
+  size=$(sizeof -a "$1" | cut -d':' -f2)
+  newbase_num=$(echo ${size}${crc} | base -O "$BASE")
+
+  mktemp $(do_sha1 "$1")_${newbase_num}_XXXXXX
+)
+
+new_base=$(compute_newbase "$img")
+rm "$new_base"
+
+name_file=${new_base}_n
+head=${new_base}_h
+foot=${new_base}_f
+thumb_img=${new_base}_t.${extension}
+original_img=${new_base}_o.${extension}
+
+# Identify the image size
+geom=$(identify -format %wx%h "$img")
+original_width=$(echo "$geom" | cut -d'x' -f1)
+original_height=$(echo "$geom" | cut -d'x' -f2)
+original_size=$(sizeof -a "$img" | cut -d':' -f2)
+
+# Resize the original (if needed)
+echo -n "Resizing original... "
+
+if [ "$extension" = "gif" ]
+then
+  cp "$img" "${TARGET}/$original_img"
+  echo "not needed (GIF)"
+else
+  if [ "$original_size" -gt "$ORIGINAL_SIZE_MAX" ]
+  then
+    if [ "$original_width" -gt "$original_height" ]
+    then
+      resize_arg=1024x
+    else
+      resize_arg=x1024
+    fi
+
+    convert "$img" -resize $resize_arg "${TARGET}/$original_img"
+    echo "done!"
+  else
+    cp "$img" "${TARGET}/$original_img"
+    echo "not needed (< max-size)"
+  fi
+fi
+
+# Compute thumbnail size
+echo -n "Compute thumbnail size... "
+
+if [ "$original_width" -gt "$THUMB_MAX_WIDTH" ]
+then
+  thumb_width="$THUMB_MAX_WIDTH"
+else
+  thumb_width="$original_width"
+fi
+
+if [ "$original_height" -gt "$THUMB_MAX_HEIGHT" ]
+then
+  thumb_height="$THUMB_MAX_HEIGHT"
+else
+  thumb_height="$original_height"
+fi
+
+if [ "$original_width" -gt "$original_height" ]
+then
+  thumb_height=""
+else
+  thumb_width=""
+fi
+
+resize_arg="${thumb_width}x${thumb_height}"
+echo "$resize_arg"
+
+# Resize the thumbnail (if needed)
+echo -n "Resize thumbnail... "
+
+if [ "$extension" = "gif" ]
+then
+  echo "not needed (GIF)"
+else
+  convert "$img" -resize $resize_arg "${TARGET}/$thumb_img"
+  echo "done!"
+fi
+
+# Ask for header/foot
+head_tmp=$(mktemp)
+foot_tmp=$(mktemp)
+
+echo "" > $head_tmp
+echo "### HEAD ###" >> $head_tmp
+
+echo "" > $foot_tmp
+echo "### FOOT ###" >> $foot_tmp
+
+vim $head_tmp
+vim $foot_tmp
+
+but_last_line() (
+  head -$(rpnc $(wc -l "$1" | awk '{ print $1 }') 1 -) "$1"
+)
+
+but_last_line $head_tmp > "${TARGET}/$head"
+but_last_line $foot_tmp > "${TARGET}/$foot"
+
+rm $head_tmp $foot_tmp
+
+# Save the name
+echo "$name" > "${TARGET}/$name_file"
+
+# Save the inde
+
+# date:new-base:orig-geom:resized-orig-geom:thumb-geom:wanted-geom:extension
+echo $(date +%s):$new_base:$(identify -format %wx%h "$img"):$(identify -format %wx%h "${TARGET}/$original_img"):$(identify -format %wx%h "${TARGET}/$thumb_img"):${thumb_width}x${thumb_height}:$extension >> ${TARGET}/INDEX
+
+# Create the "search"-links
+ln -s "${TARGET}/$name_file"    "${TARGET}/name/$new_base"
+ln -s "${TARGET}/$head"         "${TARGET}/head/$new_base"
+ln -s "${TARGET}/$foot"         "${TARGET}/foot/$new_base"
+ln -s "${TARGET}/$original_img" "${TARGET}/original/$new_base"
+ln -s "${TARGET}/$thumb_img"    "${TARGET}/thumbnail/$new_base"
