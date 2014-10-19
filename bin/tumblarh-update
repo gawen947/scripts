@@ -37,7 +37,7 @@ update_folder() (
     if ! grep ":${file}:" "$TARGET/INDEX" > /dev/null
     then
       echo "Delete '$file'."
-      #rm -f "$file"
+      rm -f "$file"
     fi
   done
 )
@@ -61,7 +61,7 @@ case "$yn" in
           if ! grep ":${base}:" "$TARGET/INDEX" > /dev/null
           then
             echo "Delete '$file'."
-            #rm -f "$file"
+            rm -f "$file"
           fi
           ;;
       esac
@@ -71,6 +71,14 @@ case "$yn" in
     do
       update_folder "$TARGET/$sub"
     done
+
+    while read line
+    do
+      post_name=$(echo "$line" | cut -d':' -f2 | sed 's/%SC/:/g')
+      post_base=$(echo "$line" | cut -d':' -f3)
+
+      echo "$post_name" > "$TARGET/${post_base}_n"
+    done < "$TARGET/INDEX"
     ;;
   *)
     echo "Cancelled.";;

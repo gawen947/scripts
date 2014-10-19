@@ -210,8 +210,9 @@ echo "$name" > "${TARGET}/$name_file"
 
 # Save the index
 
-# date:new-base:orig-geom:resized-orig-geom:thumb-geom:wanted-geom:extension
-echo $(date +%s):$new_base:$(get_geom "$img"):$(get_geom "${TARGET}/$original_img"):$(get_geom "${TARGET}/$thumb_img"):${thumb_width}x${thumb_height}:$extension >> ${TARGET}/INDEX
+# date:name:new-base:orig-geom:resized-orig-geom:thumb-geom:wanted-geom:extension
+escaped_name=$(echo "$name" | sed 's/:/%SC/g')
+echo $(date +%s):$escaped_name:$new_base:$(get_geom "$img"):$(get_geom "${TARGET}/$original_img"):$(get_geom "${TARGET}/$thumb_img"):${thumb_width}x${thumb_height}:$extension >> ${TARGET}/INDEX
 
 # Create the "search"-links
 ln -s "${TARGET}/$name_file"    "${TARGET}/name/$new_base"

@@ -42,17 +42,17 @@ esc_sed='s/\//\\\//g'
 cat "$TARGET/INDEX" | sort -t':' -rn -k1 | while read line
 do
   post_date=$(echo "$line" | cut -d':' -f 1)
-  post_base=$(echo "$line" | cut -d':' -f 2)
+  post_base=$(echo "$line" | cut -d':' -f 3)
   post_name=$(cat "$TARGET/${post_base}_n" | sed "$esc_sed")
   post_head=$(cat "$TARGET/${post_base}_h" | sed "$esc_sed")
   post_foot=$(cat "$TARGET/${post_base}_f" | sed "$esc_sed")
 
-  post_orig_geom=$(echo "$line" | cut -d':' -f 3)
-  post_resized_orig_geom=$(echo "$line" | cut -d':' -f 4)
-  post_thumb_geom=$(echo "$line" | cut -d':' -f 5)
-  post_wanted_geom=$(echo "$line" | cut -d':' -f 6)
+  post_orig_geom=$(echo "$line" | cut -d':' -f 4)
+  post_resized_orig_geom=$(echo "$line" | cut -d':' -f 5)
+  post_thumb_geom=$(echo "$line" | cut -d':' -f 6)
+  post_wanted_geom=$(echo "$line" | cut -d':' -f 7)
 
-  post_extension=$(echo "$line" | cut -d':' -f 7)
+  post_extension=$(echo "$line" | cut -d':' -f 8)
 
   post_original_img=$(echo "$TARGET/${post_base}_o.${post_extension}" | sed "$esc_sed")
   post_thumb_img=$(echo "$TARGET/${post_base}_t.${post_extension}" | sed "$esc_sed")
