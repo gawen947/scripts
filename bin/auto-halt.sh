@@ -1,8 +1,6 @@
 #!/bin/sh
 # Copyright (c) 2014 David Hauweele <david@hauweele.net>
 
-HALT="/sbin/halt"
-
 if [ $# != 1 ]
 then
   echo "usage: $0 <timeout in seconds>"
@@ -22,8 +20,13 @@ done | zenity --progress --title "$0" --text "This system will halt..." --auto-c
 
 if [ "$?" = 1 ]
 then
-  echo "cancel halt!"
+  echo "cancel halt."
 else
-  echo "halt!"
-  $HALT
+  if [ -n "$DBUS_SESSION_BUS_ADDRESS" ]
+  then
+    echo "halt using DBus..."
+    dbus-send --system --print-reply --dest="org.freedesktop.ConsoleKit" /org/freedesktop/ConsoleKit/Manager org.freedesktop.ConsoleKit.Manager.Stop
+  else
+    echo "halt..."
+    /sbin/halt
 fi
