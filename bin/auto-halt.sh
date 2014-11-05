@@ -16,7 +16,7 @@ do
   t=$(rpnc $t 1 +)
   pct=$(rpnc 100 "$timeout" / $t .)
   echo "$pct"
-done | zenity --progress --title "$0" --text "This system will halt..." --auto-close
+done | zenity --progress --title "$(basename $0)" --text "This system will halt..." --auto-close
 
 if [ "$?" = 1 ]
 then
