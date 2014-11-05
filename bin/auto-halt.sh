@@ -3,7 +3,7 @@
 
 if [ $# != 1 ]
 then
-  echo "usage: $0 <timeout in seconds>"
+  echo "usage: $(basename $0) <timeout in seconds>"
   exit 1
 fi
 
@@ -29,4 +29,5 @@ else
   else
     echo "halt..."
     /sbin/halt
+  fi
 fi
