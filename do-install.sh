@@ -19,6 +19,7 @@ do_install() (
   fi
 
   echo -n "Install $base... "
+  mkdir -p $2
   rm -f $2/$base
   cp $dir/$1/$3 $2/$base
   chown root:staff $2/$base
