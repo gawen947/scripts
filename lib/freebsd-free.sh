@@ -6,7 +6,7 @@ FACTOR="$(rpnc 1024 1024 .)"
 UNIT="MB"
 
 # Ratio Active/Inactive that gives an activity of 100%
-ACTIVITY_EQUIV_RATIO=5
+ACTIVITY_EQUIV_RATIO=6
 
 if [ "$(uname -s)" != "FreeBSD" ]
 then
