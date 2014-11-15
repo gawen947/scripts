@@ -5,9 +5,6 @@
 FACTOR="$(rpnc 1024 1024 .)"
 UNIT="MB"
 
-# Ratio Active/Inactive that gives an activity of 100%
-ACTIVITY_EQUIV_RATIO=6
-
 pct() (printf "%3.2f%%" $(rpnc "$1" "$2" / 100 .))
 to_unit() (printf "%.0f" $(rpnc "$1" "$FACTOR" / | cut -d'.' -f1))
 
@@ -74,13 +71,7 @@ esac
 mem_usage=$(rpnc "$mem_used" "$mem_bufcache" +)
 
 # Compute activity:
-#  act/inact   => activity
-#  0           ->  0%
-#  1           ->  50%
-#  EQUIV_RATIO ->  100%
-act_a=$(rpnc $ACTIVITY_EQUIV_RATIO 1 - log 2 . inv)
-act_b=$(rpnc $ACTIVITY_EQUIV_RATIO 2 -)
-activity=$(rpnc $act_b $mem_active $mem_inactive / . 1 + log $act_a . 100 .)
+activity=$(rpnc $mem_active $mem_inactive /)
 
 # Display results
 echo "Summary:"
@@ -92,7 +83,7 @@ then
     "($(pct $swap_used $swap_all))"
 fi
 echo "  Usage   : $(pct $mem_usage $mem_all)"
-echo "  Activity: $(printf '%2.2f%%' $activity)"
+echo "  Activity: $(printf '%.2f' $activity)"
 echo
 echo "Details:"
 echo "  Active  : $(to_unit $mem_active) $UNIT ($(pct $mem_active $mem_all))"
