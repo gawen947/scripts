@@ -24,7 +24,7 @@ case "$(uname -s)" in
 
     mem_all=$(get_mem page)
     mem_free=$(get_mem free)
-    mem_wire=$(get_mem wire)
+    mem_wire_or_buffer=$(get_mem wire)
     mem_active=$(get_mem active)
     mem_inactive=$(get_mem inactive)
     mem_cache=$(get_mem cache)
@@ -35,7 +35,10 @@ case "$(uname -s)" in
     swap_all=$(echo "$swap_info" | cut -d' ' -f2)
     swap_all=$(rpnc "$swap_all" 1024 .)
 
-    wire_name="Wire    :"
+    wire_or_buffer_name="Wire    :"
+
+    mem_used="$mem_active"
+    mem_bufcache=$(rpnc "$mem_wire_or_buffer" "$mem_cache" "$mem_inactive" + +)
     ;;
   Linux)
     get_mem() (
@@ -45,17 +48,21 @@ case "$(uname -s)" in
 
     mem_all=$(get_mem MemTotal)
     mem_free=$(get_mem MemFree)
-    mem_wire=$(get_mem Buffers)
+    mem_wire_or_buffer=$(get_mem Buffers)
     mem_inactive=$(get_mem Inactive)
     mem_active=$(get_mem Active)
     mem_cache=$(get_mem Cached)
 
     swap_all=$(get_mem SwapTotal)
     swap_free=$(get_mem SwapFree)
+
+
+    wire_or_buffer_name="Buffers :"
+
+    # "free used" = inact + act + buffer + cache
     swap_used=$(rpnc "$swap_total" "$swap_free" -)
-
-
-    wire_name="Buffers :"
+    mem_used=$(rpnc "$mem_all" "$mem_free" - "$mem_wire_or_buffer" "$mem_cache" + -)
+    mem_bufcache=$(rpnc "$mem_wire_or_buffer" "$mem_cache" +)
     ;;
   *)
     echo "$(uname -s) is not supported yet."
@@ -64,8 +71,6 @@ case "$(uname -s)" in
 esac
 
 # Compute details
-mem_used=$(rpnc "$mem_active" "$mem_inactive" +)
-mem_bufcache=$(rpnc "$mem_wire" "$mem_cache" +)
 mem_usage=$(rpnc "$mem_used" "$mem_bufcache" +)
 
 # Compute activity:
@@ -93,5 +98,5 @@ echo "Details:"
 echo "  Active  : $(to_unit $mem_active) $UNIT ($(pct $mem_active $mem_all))"
 echo "  Inactive: $(to_unit $mem_inactive) $UNIT ($(pct $mem_inactive $mem_all))"
 echo "  Cache   : $(to_unit $mem_cache) $UNIT ($(pct $mem_cache $mem_all))"
-echo "  $wire_name $(to_unit $mem_wire) $UNIT ($(pct $mem_wire $mem_all))"
+echo "  $wire_or_buffer_name $(to_unit $mem_wire_or_buffer) $UNIT ($(pct $mem_wire_or_buffer $mem_all))"
 echo "  Total   : $(to_unit $mem_all) $UNIT"
