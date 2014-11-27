@@ -1,6 +1,8 @@
 #!/bin/sh
 # Copyright (c) 2012 David Hauweele <david@hauweele.net>
 
+ENCODED="encoded"
+
 if [ $# = 3 ]
 then
   file="$1"
@@ -71,7 +73,7 @@ opwd=$(pwd)
 basedir=$(dirname "$file")
 basefile=$(basename "$file")
 cd "$basedir"
-mkdir -p ".encoded"
+mkdir -p "$ENCODED"
 noextension=$(basename "$basefile" .$(echo "$basefile" | awk -F . '{print $NF}'))
 newfile=$(mktemp -u "$noextension-encoding-XXXXXXXXXX")
 rm -f "$newfile"
@@ -81,7 +83,7 @@ echo $cmd
 eval $cmd
 if [ "$?" = 0 ]
 then
-  mv "$basefile" .encoded
+  mv "$basefile" "$ENCODED"
   if [ -n "$output" ]
   then
     mv "$newfile" "$output"
