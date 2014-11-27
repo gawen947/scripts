@@ -68,7 +68,7 @@ noextension=$(basename "$basefile" .$(echo "$basefile" | awk -F . '{print $NF}')
 newfile=$(mktemp -u "$noextension-encoding-XXXXXXXXXX")
 rm -f "$newfile"
 newfile=${newfile}.mkv
-cmd="ffmpeg -i \"$basefile\" $v_part $a_part \"$newfile\""
+cmd="ffmpeg -i \"$basefile\" -map 0 $v_part $a_part \"$newfile\""
 echo $cmd
 eval $cmd
 if [ "$?" = 0 ]
