@@ -1,15 +1,22 @@
 #!/bin/sh
 # Copyright (c) 2012 David Hauweele <david@hauweele.net>
 
-if [ $# != 3 ]
+if [ $# = 3 ]
 then
-  echo "usage: $0 <file> <vcodec:quality> <acodec:quality>"
+  file="$1"
+  vfield="$2"
+  afield="$3"
+elif [ $# = 4 ]
+then
+  file="$1"
+  output="$2"
+  vfield="$3"
+  afield="$4"
+else
+  echo "usage: $0 <input-file> [output-file] <vcodec:quality> <acodec:quality>"
   exit 1
 fi
 
-file="$1"
-vfield="$2"
-afield="$3"
 
 if [ ! \( -f "$file" -a -r "$file" \) ]
 then
@@ -74,8 +81,13 @@ echo $cmd
 eval $cmd
 if [ "$?" = 0 ]
 then
-  mv $basefile .encoded
-  mv $newfile $noextension.mkv
+  mv "$basefile" .encoded
+  if [ -n "$output" ]
+  then
+    mv "$newfile" "$output"
+  else
+    mv "$newfile" "$noextension.mkv"
+  fi
 else
   rm $newfile
   echo "Failed!"
