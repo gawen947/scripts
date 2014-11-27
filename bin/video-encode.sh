@@ -31,12 +31,11 @@ then
   aqual=2
 fi
 
-mvqual=$(rpnc $vqual 3 .)k
 vqual=${vqual}k
 case "$vcodec"
   in
   vp8|vpx)
-    v_part="-codec:v libvpx -quality good -cpu-used 0 -b:v $vqual -qmin 10 -qmax 42 -maxrate $mvqual";;
+    v_part="-codec:v libvpx -quality good -cpu-used 0 -b:v $vqual";;
   copy)
     v_part="-codec:v copy";;
   *)
