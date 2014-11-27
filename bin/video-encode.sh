@@ -36,6 +36,8 @@ case "$vcodec"
   in
   vp8|vpx)
     v_part="-codec:v libvpx -quality good -cpu-used 0 -crf 5 -qmin 0 -qmax 50 -b:v $vqual";;
+  vp3|theora)
+    v_part="-codec:v libtheora -b:v $vqual";;
   copy)
     v_part="-codec:v copy";;
   *)
