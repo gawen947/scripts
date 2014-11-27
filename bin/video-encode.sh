@@ -35,7 +35,7 @@ mvqual=$(rpnc $vqual 3 .)k
 vqual=${vqual}k
 case "$vcodec"
   in
-  vpx)
+  vp8|vpx)
     v_part="-codec:v libvpx -quality good -cpu-used 0 -b:v $vqual -qmin 10 -qmax 42 -maxrate $mvqual";;
   copy)
     v_part="-codec:v copy";;
