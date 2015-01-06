@@ -1,5 +1,4 @@
 #!/bin/sh
-# Copyright (c) 2011 David Hauweele <david@hauweele.net>
 
 if [ "$#" = "2" ]
 then
@@ -9,15 +8,17 @@ else
 fi
 
 ext=$(echo "$1"|awk -F . '{print $NF}')
-a=$(basename "$1" ".$ext")
+a=$(dirname "$1" )/$(basename "$1" ".$ext")
 info=$(mediainfo "$1")
 
-title=$(echo "$info" | grep "Track name" | head -n1 | sed "s/.*: //")
-artist=$(echo "$info" | grep "Performer" | tail -n1 | sed "s/.*: //")
-album=$(echo "$info" | grep "Album" | head -n1 | sed "s/.*: //")
-date=$(echo "$info" | grep "Recorded date" | head -n1 | sed "s/.*: //")
-genre=$(echo "$info" | grep "Genre" | head -n1 | sed "s/.*: //")
-track=$(echo "$info" | grep "Track name/Position" | head -n1 | sed "s/.*: //")
+title=$(echo "$info" | grep "Track name  " | head -n1 | sed "s/.*: //")
+artist=$(echo "$info" | grep "Performer  " | tail -n1 | sed "s/.*: //")
+album=$(echo "$info" | grep "Album  " | head -n1 | sed "s/.*: //")
+date=$(echo "$info" | grep "Recorded date  " | head -n1 | sed "s/.*: //")
+genre=$(echo "$info" | grep "Genre  " | head -n1 | sed "s/.*: //")
+track=$(echo "$info" | grep "Track name/Position  " | head -n1 | sed "s/.*: //")
+total=$(echo "$info" | grep "Track name/Total  "  | head -n1 | sed "s/.*: //")
+rate=$(echo "$info" | grep "Bit rate" | grep -E -o "[[:digit:]]+ Kbps" | sed "s/ Kbps//")
 
 tmp=$(TMPDIR=. mktemp)
 rm $tmp
