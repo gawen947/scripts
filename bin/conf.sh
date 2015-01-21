@@ -88,10 +88,12 @@ case "$action" in
     [ -r "$key" ] || error "key does not exist."
     [ -f "$key" ] || error "cannot get a non-leaf key."
 
-    if [ "$key" == 1 ]
+    value=$(cat "$key")
+
+    if [ "$value" == 1 ]
     then
       exit 0
-    elif [ "$key" == 0 ]
+    elif [ "$value" == 0 ]
     then
       exit 1
     else
