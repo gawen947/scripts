@@ -50,6 +50,7 @@ check_key() {
   key="${root}${key}"
 }
 
+[ $# -gt 0 ] || help_message 1
 [ "$action" == help ] && help_message 0
 
 case "$mode" in
