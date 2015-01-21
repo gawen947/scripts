@@ -32,6 +32,7 @@ help_message() {
   >&2 echo "  help               Show this help message."
   >&2 echo
   >&2 echo Actions:
+  >&2 echo "  is   key           Exit according to the boolean value (0|1) of the key."
   >&2 echo "  get  key           Get the value of a leaf key."
   >&2 echo "  set  key [value]   Set the value of a leaf key. If value is omitted,"
   >&2 echo "                     read the value from stdin."
@@ -82,6 +83,21 @@ case "$action" in
     [ -f "$key" ] || error "cannot get a non-leaf key."
 
     cat "$key"
+    ;;
+  is)
+    check_key "$key"
+    [ -r "$key" ] || error "key does not exist."
+    [ -f "$key" ] || error "cannot get a non-leaf key."
+
+    if [ "$key" == 1 ]
+    then
+      exit 0
+    elif [ "$key" == 0 ]
+    then
+      exit 1
+    else
+      error "non boolean value."
+    fi
     ;;
   set)
     check_key "$key"
