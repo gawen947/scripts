@@ -9,8 +9,8 @@ then
   . /etc/conf.rc
 fi
 
-mode=$1
-action=$2
+action=$1
+mode=$2
 key=$3
 value=$4
 
@@ -24,12 +24,7 @@ bad_usage() {
 }
 
 help_message() {
-  >&2 echo "usage: $(basename $0) mode action [[key] value]"
-  >&2 echo
-  >&2 echo Mode:
-  >&2 echo "  user               User configuration."
-  >&2 echo "  system             System configuration."
-  >&2 echo "  help               Show this help message."
+  >&2 echo "usage: $(basename $0) action user|system [[key] value]"
   >&2 echo
   >&2 echo Actions:
   >&2 echo "  is   key           Exit according to the boolean value (0|1) of the key."
@@ -55,10 +50,9 @@ check_key() {
   key="${root}${key}"
 }
 
+[ "$action" == help ] && help_message 0
+
 case "$mode" in
-  help)
-    help_message 0
-    ;;
   user)
     root=$user_root
     ;;
@@ -73,9 +67,6 @@ esac
 [ -d "$root" ] || error "root does not exist."
 
 case "$action" in
-  help)
-    help_message 0
-    ;;
   get)
     check_key "$key"
     [ -r "$key" ] || error "key does not exist."
