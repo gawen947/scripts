@@ -37,7 +37,6 @@ help_message() {
   >&2 echo "  set  key [value]   Set the value of a leaf key. If value is omitted,"
   >&2 echo "                     read the value from stdin."
   >&2 echo "  list key           List sub-keys in a non-leaf key."
-  >&2 echo "  create key         Create a leaf-key."
   >&2 echo "  remove key         Remove a key."
   >&2 echo "  enum key           Recursively enumerate all keys under the one specified."
   >&2 echo "  snapshot           Output a snapshot of the configuration on stdout."
@@ -101,7 +100,15 @@ case "$action" in
     ;;
   set)
     check_key "$key"
-    [ -r "$key" ] || error "key does not exist."
+
+    if [ ! -r "$key" ]
+    then
+      parent=$(dirname "$key")
+      [ -d "$parent" -o ! -e "$parent" ] || error "cannot create inside a leaf key."
+      mkdir -p "$parent"
+      touch "$key"
+    fi
+
     [ -f "$key" ] || error "cannot set a non-leaf key."
 
     if [ $# -lt 4 ]
@@ -117,16 +124,6 @@ case "$action" in
     [ -d "$key" ] || error "cannot list a leaf key."
 
     ls "$key"
-    ;;
-  create)
-    check_key "$key"
-    [ ! -r "$key" ] || error "key already exists."
-
-    parent=$(dirname "$key")
-    [ -d "$parent" -o ! -e "$parent" ] || error "cannot create inside a leaf key."
-
-    mkdir -p "$parent"
-    touch "$key"
     ;;
   remove)
     [ "$key" != "/" ] || error "cannot remove root key."
