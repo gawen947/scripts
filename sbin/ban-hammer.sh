@@ -59,5 +59,6 @@ else
 fi
 
 $iptables -I "$ban_chain" -s "$ip" -j DROP
-
 echo "${ip}=${limit}" >> "$ban_table"
+
+echo "Banned $ip!"
