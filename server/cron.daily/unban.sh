@@ -12,6 +12,8 @@ unban() {
   ban_chain=$2
   iptables=$3
 
+  new_table=$(mktemp)
+
   while read ban
   do
     ip=$(select "$ban" 1)
@@ -21,8 +23,13 @@ unban() {
     then
       [ "$DEBUG" = true ] && echo "Unban $ip"
       $iptables -D "$ban_chain" -s "$ip" -j DROP
+    else
+      echo "$ban" >> "$new_table"
     fi
   done < "$ban_table"
+
+  cp "$new_table" "$ban_table"
+  rm "$new_table"
 }
 
 unban /etc/firewall/ip4.ban IP4BAN iptables
