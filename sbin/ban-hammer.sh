@@ -4,27 +4,21 @@
 # Note: for now it only supports iptables (Linux)
 #       but anyone with a patch would be welcome.
 
-DEFAULT_LIMIT=1d
-
 IP4_BAN_TABLE=/etc/firewall/ip4.ban
 IP6_BAN_TABLE=/etc/firewall/ip6.ban
 
 IP4_BAN_CHAIN=IP4BAN
 IP6_BAN_CHAIN=IP6BAN
 
-if [ $# != 1 -a $# != 2 ]
+if [ $# != 2 ]
 then
-  echo "usage: $00 IP [TTL]"
+  echo "usage: $(basename $0) ip limit"
+  exit 1
 fi
 
 # FIXME: check that ip is valid.
 ip=$1
 limit=$2
-
-if [ -z "$limit" ]
-then
-  limit=$DEFAULT_LIMIT
-fi
 
 unit=$(echo $limit | sed 's/^[[:digit:]]*//')
 
