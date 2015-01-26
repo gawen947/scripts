@@ -4,6 +4,8 @@
 # Note: for now it only supports iptables (Linux)
 #       but anyone with a patch would be welcome.
 
+set -e
+
 IP4_BAN_TABLE=/etc/firewall/ip4.ban
 IP6_BAN_TABLE=/etc/firewall/ip6.ban
 
