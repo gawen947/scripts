@@ -1,4 +1,6 @@
 #!/bin/bash
+# FIXME: /bin/bash is /usr/local/bin/bash on FreeBSD
+#        would be better to have a bash-free version...
 # Universal Cat
 #   Last Modified: 2011-09-18 01:51:28
 #
