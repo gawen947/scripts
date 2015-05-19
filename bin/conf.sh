@@ -65,7 +65,12 @@ case "$mode" in
     ;;
 esac
 
-[ -d "$root" ] || error "root does not exist."
+if [ ! -d "$root" ]
+then
+  mkdir -p "$root"
+fi
+
+[ -d "$root" ] || error "root is not a directory"
 
 case "$action" in
   get)
