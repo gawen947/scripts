@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2014 David Hauweele <david@hauweele.net>
+# Copyright (c) 2014-2015 David Hauweele <david@hauweele.net>
 
 # Memory unit
 FACTOR="$(rpnc 1024 1024 .)"
@@ -10,7 +10,7 @@ to_unit() (printf "%.0f" $(rpnc "$1" "$FACTOR" / | cut -d'.' -f1))
 
 # Retrieve memory information
 case "$(uname -s)" in
-  FreeBSD)
+  DragonFly|FreeBSD)
     get_sysctl() (sysctl "$1" | cut -d':' -f2 | sed 's/ *//g')
     get_mem() (
       page_count=$(get_sysctl "vm.stats.vm.v_${1}_count")
