@@ -23,6 +23,7 @@ do_install() (
   rm -f $2/$base
   cp $dir/$1/$3 $2/$base
   chown root:staff $2/$base
+  chmod 755 $2/$base
   echo "done."
 )
 
