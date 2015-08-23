@@ -352,7 +352,7 @@ if [ "$pattern" = "mono" ]
 then
   style="[ style=filled, color=black, fillcolor=$CLR_PRIMARY ]"
 fi
-w
+
 # Classify nodes according to the choosen style pattern.
 # We need to do this offline because some styles require
 # to compute their extrema.
