@@ -66,13 +66,14 @@ usage() {
   >&2 echo
   >&2 echo "  -h Display this help message"
   >&2 echo "  -V Display version"
-  >&2 echo "  -r Use reverse call graph"
+  >&2 echo "  -r Use specified symbol as root"
   >&2 echo "  -e Display external symbols"
   >&2 echo "  -m Display multiple calls as multiple edges (no effect on GNU cflow)"
   >&2 echo "  -p Style pattern for the nodes (use list for a list)"
   >&2 echo "  -l Log scale for the style pattern"
   >&2 echo "  -o Output format (see dot, default: x11)"
   >&2 echo "  -H Switch to an horizontal layout"
+  >&2 echo "  -R Use reverse call graph"
   >&2 echo "  -C Extra arguments for cflow"
   >&2 echo "  -D Extra arguments for dot"
 }
@@ -101,7 +102,7 @@ log_scale=false
 pattern=scope
 rankdir=LR
 
-while getopts ":hVremp:lo:HC:D:" argv
+while getopts ":hVemRr:p:lo:HC:D:" argv
 do
   case "$argv" in
   h)
@@ -115,6 +116,13 @@ do
     exit 0
     ;;
   r)
+    #FIXME: How can we implemented that easily?  The cflow tree is
+    # full of back references so we cannot just select a part of the
+    # output. I think we are better off filtering the resulting graph?
+    echo "error: root option not implemented yet :("
+    exit 1
+    ;;
+  R)
     cflow_args="$cflow_args -r"
     ;;
   e)
