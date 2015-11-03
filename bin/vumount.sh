@@ -38,30 +38,30 @@ parse_mount() {
   mount_line=$(mount | grep "on $mount_point")
   name=$(basename "$mount_point")
 
-  case "$OS" in
-    Linux|OpenBSD)
-      device=$(echo "$mount_line" | awk '{ print $1 }')
-      options=$(echo "$mount_line" | grep -Eo "\(.*\)" | tr -d '() ')
-      type=$(echo "$mount_line" | grep -Eo "type [^ ]+" | sed 's/type //')
-      ;;
-    FreeBSD)
-      if [ -z "$mount_line" ]
-      then
-        device="-"
-        options="-"
-        type="-"
-      else
+  if [ -z "$mount_line" ]
+  then
+    device="-"
+    options="-"
+    type="-"
+  else
+    case "$OS" in
+      Linux|OpenBSD)
+        device=$(echo "$mount_line" | awk '{ print $1 }')
+        options=$(echo "$mount_line" | grep -Eo "\(.*\)" | tr -d '() ')
+        type=$(echo "$mount_line" | grep -Eo "type [^ ]+" | sed 's/type //')
+        ;;
+      FreeBSD)
         device=$(echo "$mount_line" | awk '{ print $1 }')
         options=$(echo "$mount_line" | grep -Eo "\(.*\)" | tr -d '() ')
         type=$(echo "$options" | cut -d',' -f 1)
         options=$(echo "$options" | sed "s#^$type,##")
-      fi
-      ;;
-    *)
-      >&2 echo "error: unknown OS $OS"
-      exit 1
-      ;;
-  esac
+        ;;
+      *)
+        >&2 echo "error: unknown OS $OS"
+        exit 1
+        ;;
+    esac
+  fi
 
   echo -e "$name $type $device $options"
 }
