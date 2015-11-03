@@ -20,7 +20,7 @@ parse_mount() {
   case "$OS" in
     Linux|OpenBSD)
       device=$(echo "$mount_line" | awk '{ print $1 }')
-      options=$(echo "$mount_line" | grep -Eo "\(.*\)" | tr -d '()')
+      options=$(echo "$mount_line" | grep -Eo "\(.*\)" | tr -d '() ')
       type=$(echo "$mount_line" | grep -Eo "type [^ ]+" | sed 's/type //')
       ;;
     FreeBSD)
@@ -31,9 +31,9 @@ parse_mount() {
         type="-"
       else
         device=$(echo "$mount_line" | awk '{ print $1 }')
-        options=$(echo "$mount_line" | grep -Eo "\(.*\)" | tr -d '()')
+        options=$(echo "$mount_line" | grep -Eo "\(.*\)" | tr -d '() ')
         type=$(echo "$options" | cut -d',' -f 1)
-        options=$(echo "$options" | cut -d',' -f 2 | sed 's/^ //')
+        options=$(echo "$options" | sed "s#^$type,##")
       fi
       ;;
     *)
