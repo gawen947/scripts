@@ -220,7 +220,11 @@ preprocess() {
     if grep "^:include " > /dev/null
     then
       included_profile=$(echo "$line" | sed 's/^:include //')
-      cat "$PROFILES_PATH"/"$included_profile"/"$base"
+
+      tmp_preprocessed=$(mktemp)
+      preprocess "$base" "$PROFILES_PATH"/"$included_profile"/"$base" "$tmp_preprocessed"
+      cat "$tmp_preprocessed"
+      rm -f "$tmp_preprocessed"
     else
       echo "$line"
     fi
