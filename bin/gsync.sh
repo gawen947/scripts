@@ -23,16 +23,16 @@
 #  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 NAME="gsync"
-VERSION="0.1"
+VERSION="0.2"
 
 # Default path and options
 CONFIGURATION_PATH="$HOME/.config/gsync/gsync.conf"
 PROFILES_PATH="$HOME/.config/gsync/profiles"
-RSYNC_PATH="rsync"
-RSYNC_OPTIONS="-avzh --progress --delete"
+DIALOG="dialog" # could change with Xdialog
+RSYNC="rsync"
+RSYNC_OPTIONS="-avzhrR --progress --delete"
 
-RCol='\e[0m'    # Text Reset
-
+# We need some colors
 # Regular           Bold                Underline           High Intensity      BoldHigh Intens     Background          High Intensity Backgrounds
 Bla='\e[0;30m';     BBla='\e[1;30m';    UBla='\e[4;30m';    IBla='\e[0;90m';    BIBla='\e[1;90m';   On_Bla='\e[40m';    On_IBla='\e[0;100m';
 Red='\e[0;31m';     BRed='\e[1;31m';    URed='\e[4;31m';    IRed='\e[0;91m';    BIRed='\e[1;91m';   On_Red='\e[41m';    On_IRed='\e[0;101m';
@@ -42,6 +42,7 @@ Blu='\e[0;34m';     BBlu='\e[1;34m';    UBlu='\e[4;34m';    IBlu='\e[0;94m';    
 Pur='\e[0;35m';     BPur='\e[1;35m';    UPur='\e[4;35m';    IPur='\e[0;95m';    BIPur='\e[1;95m';   On_Pur='\e[45m';    On_IPur='\e[0;105m';
 Cya='\e[0;36m';     BCya='\e[1;36m';    UCya='\e[4;36m';    ICya='\e[0;96m';    BICya='\e[1;96m';   On_Cya='\e[46m';    On_ICya='\e[0;106m';
 Whi='\e[0;37m';     BWhi='\e[1;37m';    UWhi='\e[4;37m';    IWhi='\e[0;97m';    BIWhi='\e[1;97m';   On_Whi='\e[47m';    On_IWhi='\e[0;107m';
+RCol='\e[0m' # Text Reset
 
 version() {
   >&2 echo "$NAME v$VERSION"
@@ -55,9 +56,16 @@ usage() {
   >&2 echo "  -n Perform a trial with no changes made"
 }
 
+error() {
+  >&2 echo -e "${BRed}error:${RCol}" $*
+}
+
+info() {
+  >&2 echo -e "${BBlu}info:${RCol}" $*
+}
+
 check_binary() {
   binary=$1
-  package=$2
 
   if [ -z "$package" ]
   then
@@ -66,7 +74,7 @@ check_binary() {
 
   if ! which "$binary" > /dev/null
   then
-    >&2 echo "error: missing dependency $package"
+    error "cannot find $binary"
     exit 1
   fi
 }
@@ -81,12 +89,12 @@ then
   mkdir -p "$PROFILES_PATH"
 fi
 
-check_binary "$RSYNC_PATH" rsync
-check_binary dialog dialog
+check_binary "$RSYNC"
+check_binary "$DIALOG"
 
 rsync_options="$RSYNC_OPTIONS"
 
-hclr="${BRed}"
+dry_run=false
 while getopts ":hVn" argv
 do
   case "$argv" in
@@ -102,10 +110,10 @@ do
     ;;
   n)
     rsync_options="$rsync_options -n"
-    hclr="${Blu}"
+    dry_run=true
     ;;
   \?)
-    >&2 echo "error: invalid option -$OPTARG"
+    error "invalid option -$OPTARG"
     >&2 echo
     usage
     exit 1
@@ -118,37 +126,100 @@ done
 case "$#" in
 1)
   remote="$1"
-  # FIXME: The fselect dialog kind of sucks...
-  # Anything better is welcome!
-  profile=$(dialog --fselect "$PROFILES_PATH" 0 0)
+
+  profile_selected=$(mktemp)
+
+  find "$PROFILES_PATH" -type d -maxdepth 1 | while read profile
+  do
+    [ ! -d "$profile" -o \
+      ! -r "$profile"/desc -o \
+      ! -r "$profile"/files ] && continue
+    echo $(basename "$profile")
+    head -n1 "$profile"/desc
+  done | tr '\n' '\0' | xargs -0 "$DIALOG" --menu "Profile selection" 0 0 0 2> "$profile_selected"
+
+  profile=$(cat "$profile_selected")
+  rm -f "$profile_selected"
+
+  if [ -z "$profile" ]
+  then
+    error "No profile selected."
+    exit 1
+  fi
   ;;
 2)
   remote="$1"
-  profile="$PROFILES_PATH/$2"
+  profile="$2"
   ;;
 *)
-  >&2 echo "error: one or two arguments required"
+  error "one or two arguments required"
   >&2 echo
   usage
   exit 1
   ;;
 esac
 
-if [ ! -r "$profile" ]
+profile_path="$PROFILES_PATH"/"$profile"
+
+if [ ! -d "$profile_path" ]
 then
-  >&2 echo "error: cannot read profile"
+  error "Cannot read profile ${Blu}$profile${RCol}."
+  error "profiles must be directories"
+  error "located in ${Cya}$PROFILES_PATH${Rcol}."
   exit 1
 fi
 
-cat "$profile" | while read line
-do
-  case "$line" in
-  \#|"")
-  ;;
-  esac
+if [ ! -r "$profile_path"/desc ]
+then
+  # FIXME: Perhaps this shouldn't be mandatory."
+  error "The desc was not found in the profile."
+  error "This file provides a description"
+  error "of the profile. The first line should"
+  error "provide a short description that is used"
+  error "for the selection menu."
+fi
 
-  # FIXME: We don't check the no trailing slash at the end of the target ($0).
-  echo
-  echo "$line" | xargs sh -c "echo -e \"${hclr}syncing '${BYel}\$0${hclr}' to ${BBlu}$remote${hclr} (extra-opt: '${BPur}\$*${hclr}')...${RCol}\""
-  echo "$line" | xargs sh -c "rsync $rsync_options \$* \"$HOME/\$0\"/ \"$remote\":\"$HOME/\$0\""
-done
+if [ ! -r "$profile_path"/files ]
+then
+  error "The files was not found in the profile."
+  error "This is a list of source files"
+  error "for this synchronization profile."
+  exit 1
+fi
+
+echo -e "Profile selected ${Blu}$profile${RCol}:${BWhi}"
+cat "$profile_path"/desc
+echo -e "${RCol}"
+
+if [ -r "$profile_path"/options ]
+then
+  info "Loading profile options."
+  . "$profile_path"/options
+
+  rsync_options="$rsync_options $RSYNC_EXTRA_OPTIONS"
+fi
+
+if [ -r "$profile_path"/exclude ]
+then
+  info "Loading exclude patterns."
+  exclude_option="--exclude-from=$profile_path/exclude"
+fi
+
+if [ -r "$profile_path"/include ]
+then
+  info "Loading include patterns."
+  include_option="--include-from=$profile_path/include"
+fi
+
+echo -e "${BWhi}Syncing profile ${BBlu}$profile${BWhi} to ${BYel}$remote${BWhi}...${RCol}"
+if $dry_run
+then
+  info "Dry-run! No changes will be made!"
+fi
+echo
+
+set -x
+"$RSYNC" $rsync_options --files-from="$profile_path"/files \
+         $exclude_option $include_option \
+         "$HOME" \
+         "$remote":
