@@ -131,10 +131,16 @@ case "$#" in
 
   find "$PROFILES_PATH" -type d -maxdepth 1 | while read profile
   do
+    profile_name=$(basename "$profile")
+    if echo "$profile_name" | grep "^_" > /dev/null
+    then
+      continue
+    fi
+
     [ ! -d "$profile" -o \
       ! -r "$profile"/desc -o \
       ! -r "$profile"/files ] && continue
-    echo $(basename "$profile")
+    echo $profile_name
     head -n1 "$profile"/desc
   done | tr '\n' '\0' | xargs -0 "$DIALOG" --menu "Profile selection" 0 0 0 2> "$profile_selected"
 
@@ -191,6 +197,36 @@ echo -e "Profile selected ${Blu}$profile${RCol}:${BWhi}"
 cat "$profile_path"/desc
 echo -e "${RCol}"
 
+exclude_preprocessed=$(mktemp)
+include_preprocessed=$(mktemp)
+files_preprocessed=$(mktemp)
+
+preprocess() {
+  base="$1"
+  in="$2"
+  out="$3"
+
+  cat "$1" | while read line
+  do
+    if grep "^#" > /dev/null
+    then
+      continue
+    fi
+    if grep "^ *$" > /dev/null
+    then
+      continue
+    fi
+
+    if grep "^:include " > /dev/null
+    then
+      included_profile=$(echo "$line" | sed 's/^:include //')
+      cat "$PROFILES_PATH"/"$included_profile"/"$base"
+    else
+      echo "$line"
+    fi
+  done
+}
+
 if [ -r "$profile_path"/options ]
 then
   info "Loading profile options."
@@ -202,12 +238,16 @@ fi
 if [ -r "$profile_path"/exclude ]
 then
   info "Loading exclude patterns."
-  exclude_option="--exclude-from=$profile_path/exclude"
+
+  preprocess exclude "$profile_path"/exclude "$exclude_preprocessed"
+  exclude_option="--exclude-from=$exclude_preprocessed"
 fi
 
 if [ -r "$profile_path"/include ]
 then
   info "Loading include patterns."
+
+  preprocess include "$profile_path"/include "$include_preprocessed"
   include_option="--include-from=$profile_path/include"
 fi
 
@@ -223,3 +263,5 @@ set -x
          $exclude_option $include_option \
          "$HOME" \
          "$remote":
+
+rm -f "$exclude_preprocessed" "$include_preprocessed" "$files_preprocessed"
