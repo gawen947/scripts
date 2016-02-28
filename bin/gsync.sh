@@ -30,7 +30,7 @@ CONFIGURATION_PATH="$HOME/.config/gsync/gsync.conf"
 PROFILES_PATH="$HOME/.config/gsync/profiles"
 DIALOG="dialog" # could change with Xdialog
 RSYNC="rsync"
-RSYNC_OPTIONS="-avzhrR --progress --delete"
+RSYNC_OPTIONS="-avhrR --progress --delete"
 
 # We need some colors
 # Regular           Bold                Underline           High Intensity      BoldHigh Intens     Background          High Intensity Backgrounds
