@@ -92,7 +92,7 @@ fi
 check_binary "$RSYNC"
 check_binary "$DIALOG"
 
-rsync_options="$RSYNC_OPTIONS"
+rsync_options="$RSYNC_OPTIONS $RSYNC_EXTRA_OPTIONS"
 
 dry_run=false
 while getopts ":hVn" argv
