@@ -202,31 +202,29 @@ include_preprocessed=$(mktemp)
 files_preprocessed=$(mktemp)
 
 preprocess() {
-  base="$1"
-  in="$2"
-  out="$3"
-
-  cat "$1" | while read line
+  cat "$2" | while read line
   do
-    if grep "^#" > /dev/null
+    if echo "$line" | grep "^#" > /dev/null
     then
       continue
     fi
-    if grep "^ *$" > /dev/null
+    if echo "$line" | grep "^ *$" > /dev/null
     then
       continue
     fi
 
-    if grep "^:include " > /dev/null
+    if echo "$line" | grep "^:include " > /dev/null
     then
       included_profile=$(echo "$line" | sed 's/^:include //')
 
+      info "include ${Blu}$included_profile${RCol}"
+
       tmp_preprocessed=$(mktemp)
-      preprocess "$base" "$PROFILES_PATH"/"$included_profile"/"$base" "$tmp_preprocessed"
-      cat "$tmp_preprocessed"
+      preprocess "$1" "$PROFILES_PATH"/"$included_profile"/"$1" "$tmp_preprocessed"
+      cat "$tmp_preprocessed" >> "$3"
       rm -f "$tmp_preprocessed"
     else
-      echo "$line"
+      echo "$line" >> "$3"
     fi
   done
 }
@@ -255,6 +253,9 @@ then
   include_option="--include-from=$profile_path/include"
 fi
 
+preprocess files "$profile_path"/files "$files_preprocessed"
+
+echo
 echo -e "${BWhi}Syncing profile ${BBlu}$profile${BWhi} to ${BYel}$remote${BWhi}...${RCol}"
 if $dry_run
 then
@@ -263,7 +264,7 @@ fi
 echo
 
 set -x
-"$RSYNC" $rsync_options --files-from="$profile_path"/files \
+"$RSYNC" $rsync_options --files-from="$files_preprocessed" \
          $exclude_option $include_option \
          "$HOME" \
          "$remote":
