@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Default rate when we cannot detect the bit rate.
+DEFAULT_RATE=128
+
 clamp_rate=9999
 case "$#" in
   1)
@@ -31,7 +34,7 @@ genre=$(echo "$info" | grep "Genre  " | head -n1 | sed "s/.*: //")
 track=$(echo "$info" | grep "Track name/Position  " | head -n1 | sed "s/.*: //")
 total=$(echo "$info" | grep "Track name/Total  "  | head -n1 | sed "s/.*: //")
 rate=$(echo "$info" | grep "Bit rate" | grep -E -o "[[:digit:]]+ Kbps" | sed "s/ Kbps//")
-
+alt_rate=$(echo "$info" | grep "Overall bit rate" | grep -E -o "[[:digit:]]+ Kbps" | sed "s/ Kbps//")
 
 # Decode
 normalized_extension=$(echo "$original_extension" | tr '[:upper:]' '[:lower:]')
@@ -40,7 +43,7 @@ rm "$decoded"
 
 # Skip unsupported file formats.
 found=""
-for supported_extension in ogg flac mp3 wma oga aiff riff wav au mpc m4a aac
+for supported_extension in ogg flac mp3 wma oga aiff riff wav au mpc m4a aac webm
 do
   if [ "$normalized_extension" = "$supported_extension" ]
   then
@@ -74,10 +77,21 @@ esac
 echo
 
 # Sometimes we cannot decode the rate
+echo "======= CONVERT SELECTION ======="
 if [ -z "$rate" ]
 then
-  rate="128"
+  if [ "$alt_rate" ]
+  then
+    rate="$alt_rate"
+    echo "Using overall bit rate: $rate Kbps"
+  else
+    rate="$DEFAULT_RATE"
+    echo "Cannot detect rate, using default rate: $rate Kbps"
+  fi
+else
+  echo "Using average bit rate: $rate Kbps"
 fi
+echo "================================="
 
 if [ "$rate" -ge "$clamp_rate" ]
 then
