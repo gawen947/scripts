@@ -1,10 +1,21 @@
 #!/bin/sh
 # Copyright (c) 2015 David Hauweele <david@hauweele.net>
 
-# Note: for now it only supports iptables (Linux)
+# Note: for now it only supports iptables (Linux) and PF (*BSD)
 #       but anyone with a patch would be welcome.
 
 set -e
+
+case "$(uname -s)" in
+  *BSD)
+    # PF made it EZ
+    pfctl -t banned -T add "$1"
+    exit 0
+    ;;
+  *)
+    # default on Netfilter
+    ;;
+esac
 
 IP4_BAN_TABLE=/etc/firewall/ip4.ban
 IP6_BAN_TABLE=/etc/firewall/ip6.ban
