@@ -9,6 +9,10 @@ set -e
 case "$(uname -s)" in
   *BSD)
     # PF made it EZ
+    # A periodic script unban IPs with a fixed timeout:
+    #   pfctl -t banned -T expire 86400
+    # A shutdown script save IPs in the /etc/ip.ban file.
+    #   /etc/rc.shutdown: pfctl -t banned -T show > /etc/ip.ban
     pfctl -t banned -T add "$1"
     exit 0
     ;;
