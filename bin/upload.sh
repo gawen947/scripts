@@ -59,10 +59,11 @@ crc=$(crc32 "$file" | cut -d' ' -f1)
 size=$(sizeof -a "$file" | cut -d':' -f2)
 upnum=${size}${crc}
 upname=$(echo "$upnum" | base -O "$BASE")
+filename=$(basename "$file")
 
 # We redirect stdout to stderr so the only line present on stdout is the fetch URL.
 rsync --progress --chmod=a+r "$file" $UP_URL:$UP_PATH/$upname 1>&2
-ssh $UP_URL "echo $upname $ttl  >> ~/.uploaded-limit; echo \"$upname $file\" >> ~/.uploaded-map" 1>&2
+ssh $UP_URL "echo $upname $ttl  >> ~/.uploaded-limit; echo \"$upname $filename\" >> ~/.uploaded-map" 1>&2
 
 echo "" 1>&2
 echo "Uploaded:" 1>&2
