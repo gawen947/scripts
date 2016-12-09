@@ -3,7 +3,7 @@
 
 UP_URL="smeagol.hauweele.net"
 UP_PATH="public_html/upload"
-DOWN_URL="http://www.hauweele.net/~gawen/upload"
+DOWN_URL="http://hauweele.net/~$USER/upload"
 BASE="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 if [ $# != 1 -a $# != 2 ]
