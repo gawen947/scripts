@@ -272,17 +272,20 @@ set -x
          $exclude_option $include_option \
          "$HOME" \
          "$remote":
+set +x
+
 if ! $dry_run
 then
   now=$(date)
   if [ "$ENABLE_INPUT_HISTORY" = true ]
   then
-    stamp="$now -- profile: $profile uploaded from $(hostname)"
+    stamp="$now -- profile: $profile uploaded from $(hostname) to me"
     ssh "$remote" "mkdir -p $HISTORY_PATH; echo $stamp >> $HISTORY_PATH/input.log" 1>&2
   fi
-  if [ "$ENABLE_OUTPUT_HISTORY"= true ]
+  if [ "$ENABLE_OUTPUT_HISTORY" = true ]
   then
     stamp="$now -- profile: $profile uploaded from me to $remote"
+    mkdir -p "$HISTORY_PATH"
     echo "$stamp" >> $HISTORY_PATH/output.log
   fi
 fi
