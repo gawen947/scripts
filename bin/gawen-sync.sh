@@ -27,8 +27,12 @@ VERSION="0.2"
 
 # Default path and options
 CONFIGURATION_PATH="$HOME/.config/gsync/gsync.conf"
-PROFILES_PATH="$HOME/.config/gsync/profiles"
-HISTORY_PATH="$HOME/.config/gsync/history"
+CONFIG_BASE=".config/gsync"
+PROFILES_BASE="$CONFIG_BASE/profiles"
+HISTORY_BASE="$CONFIG_BASE/history"
+CONFIG_PATH="$HOME/$CONFIG_BASE"
+PROFILES_PATH="$HOME/$PROFILES_BASE"
+HISTORY_PATH="$HOME/$HISTORY_BASE"
 DIALOG="dialog" # could change with Xdialog
 RSYNC="rsync"
 RSYNC_OPTIONS="-avhrR --progress --delete"
@@ -257,7 +261,7 @@ fi
 preprocess files "$profile_path"/files "$files_preprocessed"
 
 # Always ignore history
-echo "$HISTORY_PATH" >> "$exclude_preprocessed"
+echo "$HISTORY_BASE" >> "$exclude_preprocessed"
 
 echo
 echo -e "${BWhi}Syncing profile ${BBlu}$profile${BWhi} to ${BYel}$remote${BWhi}...${RCol}"
@@ -279,12 +283,12 @@ then
   now=$(date)
   if [ "$ENABLE_INPUT_HISTORY" = true ]
   then
-    stamp="$now -- profile: $profile uploaded from $USER@$(hostname) to me"
+    stamp="$now -- $profile uploaded from $USER@$(hostname) to me"
     ssh "$remote" "mkdir -p $HISTORY_PATH; echo $stamp >> $HISTORY_PATH/input.log" 1>&2
   fi
   if [ "$ENABLE_OUTPUT_HISTORY" = true ]
   then
-    stamp="$now -- profile: $profile uploaded from me to $remote"
+    stamp="$now -- $profile uploaded from me to $remote"
     mkdir -p "$HISTORY_PATH"
     echo "$stamp" >> $HISTORY_PATH/output.log
   fi
