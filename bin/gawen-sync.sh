@@ -279,7 +279,7 @@ then
   now=$(date)
   if [ "$ENABLE_INPUT_HISTORY" = true ]
   then
-    stamp="$now -- profile: $profile uploaded from $(hostname) to me"
+    stamp="$now -- profile: $profile uploaded from $USER@$(hostname) to me"
     ssh "$remote" "mkdir -p $HISTORY_PATH; echo $stamp >> $HISTORY_PATH/input.log" 1>&2
   fi
   if [ "$ENABLE_OUTPUT_HISTORY" = true ]
