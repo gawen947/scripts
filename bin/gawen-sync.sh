@@ -28,6 +28,7 @@ VERSION="0.2"
 # Default path and options
 CONFIGURATION_PATH="$HOME/.config/gsync/gsync.conf"
 PROFILES_PATH="$HOME/.config/gsync/profiles"
+HISTORY_PATH="$HOME/.config/gsync/history"
 DIALOG="dialog" # could change with Xdialog
 RSYNC="rsync"
 RSYNC_OPTIONS="-avhrR --progress --delete"
@@ -242,8 +243,8 @@ then
   info "Loading exclude patterns."
 
   preprocess exclude "$profile_path"/exclude "$exclude_preprocessed"
-  exclude_option="--exclude-from=$exclude_preprocessed"
 fi
+exclude_option="--exclude-from=$exclude_preprocessed"
 
 if [ -r "$profile_path"/include ]
 then
@@ -254,6 +255,9 @@ then
 fi
 
 preprocess files "$profile_path"/files "$files_preprocessed"
+
+# Always ignore history
+echo "$HISTORY_PATH" >> "$exclude_preprocessed"
 
 echo
 echo -e "${BWhi}Syncing profile ${BBlu}$profile${BWhi} to ${BYel}$remote${BWhi}...${RCol}"
@@ -268,5 +272,18 @@ set -x
          $exclude_option $include_option \
          "$HOME" \
          "$remote":
-
+if ! $dry_run
+then
+  now=$(date)
+  if [ "$ENABLE_INPUT_HISTORY" = true ]
+  then
+    stamp="$now -- profile: $profile uploaded from $(hostname)"
+    ssh "$remote" "mkdir -p $HISTORY_PATH; echo $stamp >> $HISTORY_PATH/input.log" 1>&2
+  fi
+  if [ "$ENABLE_OUTPUT_HISTORY"= true ]
+  then
+    stamp="$now -- profile: $profile uploaded from me to $remote"
+    echo "$stamp" >> $HISTORY_PATH/output.log
+  fi
+fi
 rm -f "$exclude_preprocessed" "$include_preprocessed" "$files_preprocessed"
