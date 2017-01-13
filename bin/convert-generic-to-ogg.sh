@@ -35,6 +35,12 @@ track=$(echo "$info" | grep "Track name/Position  " | head -n1 | sed "s/.*: //")
 total=$(echo "$info" | grep "Track name/Total  "  | head -n1 | sed "s/.*: //")
 rate=$(echo "$info" | grep "Bit rate" | grep -E -o "[[:digit:]]+ Kbps" | sed "s/ Kbps//")
 alt_rate=$(echo "$info" | grep "Overall bit rate" | grep -E -o "[[:digit:]]+ Kbps" | sed "s/ Kbps//")
+if [ -z "$rate" -a -z "$alt_rate" ]
+then
+  # Maybe a newer version of mediainfo
+  rate=$(echo "$info" | grep "Bit rate" | grep -E -o "[[:digit:]]+ kb/s" | sed "s# kb/s##")
+  alt_rate=$(echo "$info" | grep "Overall bit rate" | grep -E -o "[[:digit:]]+ kb/s" | sed "s# kb/s##")
+fi
 
 # Decode
 normalized_extension=$(echo "$original_extension" | tr '[:upper:]' '[:lower:]')
