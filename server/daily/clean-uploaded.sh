@@ -3,6 +3,8 @@
 
 now=$(date +"%s")
 
+HOME_UPLOAD_PATH="public_html/upload"
+
 for user in $(ls /home)
 do
   home=/home/$user
@@ -19,6 +21,14 @@ do
   do
     file=$(echo $line | cut -d' ' -f 1)
     limit=$(echo $line | cut -d' ' -f 2)
+    file_path = "$home/$HOME_UPLOAD_PATH/$file"
+
+    if [ ! -r "$file_path" ]
+    then
+      echo "Ignoring non-existent file: $file_path"
+      rm "$file_path"
+      continue
+    fi
 
     if [ "$now" -gt "$limit" ]
     then
@@ -32,6 +42,21 @@ do
       echo "$line" >> $tmp_limit
     fi
   done < $limit_file
+
+  # Removing non-mapped files
+  find "$home/$HOME_UPLOAD_PATH" -type f | while read file
+  do
+    if ! cat "$map_file" | grep "$file" > /dev/null
+    then
+      echo "Removing non-mapped file: $file"
+      rm "$file"
+    fi
+    if ! cat "$limit_file" | grep "$file" > /dev/null
+    then
+      echo "Removing non-limited file: $file"
+      rm "$file"
+    fi
+  done
 
   mv $tmp_limit $limit_file
   mv $tmp_map   $map_file
