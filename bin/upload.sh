@@ -110,5 +110,5 @@ fi
 
 echo "" 1>&2
 echo "Uploaded:" 1>&2
-echo "$DOWN_URL/$upname"
+echo " $DOWN_URL/$upname"
 
