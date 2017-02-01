@@ -49,7 +49,7 @@ then
   # If we upload multiple files or a directory
   # then we use an archive.
   file=$(mktemp)
-  tar -${TAR_COMPRESSION}cf "$file" $*
+  tar -${TAR_COMPRESSION}cf "$file" "$@"
   echo
 
   if [ "$#" -gt 1 ]
