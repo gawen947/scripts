@@ -21,7 +21,7 @@ do
   do
     file=$(echo $line | cut -d' ' -f 1)
     limit=$(echo $line | cut -d' ' -f 2)
-    file_path = "$home/$HOME_UPLOAD_PATH/$file"
+    file_path="$home/$HOME_UPLOAD_PATH/$file"
 
     if [ ! -r "$file_path" ]
     then
@@ -31,7 +31,7 @@ do
 
     if [ "$now" -gt "$limit" ]
     then
-      rm -f $home/public_html/upload/$file
+      rm -f "$file_path"
     else
       map=$(cat "$map_file" | grep "^$file ")
       if [ -n "$map" ]
