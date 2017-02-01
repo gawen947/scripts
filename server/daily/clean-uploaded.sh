@@ -45,13 +45,13 @@ do
   # Removing non-mapped files
   find "$home/$HOME_UPLOAD_PATH" -type f | while read file
   do
-    file=$(basename $file)
-    if ! cat "$map_file" | grep "^$file" > /dev/null
+    base_file=$(basename $file)
+    if ! cat "$map_file" | grep "^$base_file" > /dev/null
     then
       echo "Removing non-mapped file: $file"
       rm -f "$file"
     fi
-    if ! cat "$limit_file" | grep "^$file" > /dev/null
+    if ! cat "$limit_file" | grep "^$base_file" > /dev/null
     then
       echo "Removing non-limited file: $file"
       rm -f "$file"
