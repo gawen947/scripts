@@ -26,7 +26,6 @@ do
     if [ ! -r "$file_path" ]
     then
       echo "Ignoring non-existent file: $file_path"
-      rm "$file_path"
       continue
     fi
 
@@ -46,15 +45,16 @@ do
   # Removing non-mapped files
   find "$home/$HOME_UPLOAD_PATH" -type f | while read file
   do
-    if ! cat "$map_file" | grep "$file" > /dev/null
+    file=$(basename $file)
+    if ! cat "$map_file" | grep "^$file" > /dev/null
     then
       echo "Removing non-mapped file: $file"
-      rm "$file"
+      rm -f "$file"
     fi
-    if ! cat "$limit_file" | grep "$file" > /dev/null
+    if ! cat "$limit_file" | grep "^$file" > /dev/null
     then
       echo "Removing non-limited file: $file"
-      rm "$file"
+      rm -f "$file"
     fi
   done
 
