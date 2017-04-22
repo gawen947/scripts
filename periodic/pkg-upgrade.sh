@@ -1,5 +1,6 @@
 #!/bin/sh
 # Check for upgrades in FreeBSD
+# Copyright (c) 2017 David Hauweele <david@hauweele.net>
 export PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
 
 echo "Update port tree"
