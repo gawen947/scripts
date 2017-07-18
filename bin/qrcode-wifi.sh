@@ -2,22 +2,26 @@
 #
 # Copyright (c) 2013 David Hauweele <david@hauweele.net>
 
-if ! which qrencode > /dev/null
-then
-  echo "error: requires qrencode"
-  exit 1
-fi
-
-if ! which feh > /dev/null
-then
-  echo "error: requires feh"
-  exit 1
-fi
-
 auth=""
 ssid=""
 psk=""
 hidden="no"
+
+check_binary() {
+  binary=$1
+  package=$2
+
+  if [ -z "$package" ]
+  then
+    package=$binary
+  fi
+
+  if ! which "$binary" > /dev/null
+  then
+    >&2 echo "error: missing dependency $package"
+    exit 1
+  fi
+}
 
 ask_wifi_params() {
   authf=$(mktemp)
@@ -97,12 +101,36 @@ nm_wifi_params() {
   hidden="$(nm_get $conn_id 802-11-wireless.hidden)"
 }
 
-if [ -z "$1" ]
+check_binary qrencode qrencode
+check_binary feh feh
+
+method="$1"
+if [ $# = 0 ]
 then
-  ask_wifi_params
-else
-  nm_wifi_params "$1"
+  method=ask
 fi
+shift
+
+case "$method" in
+  ask)
+    check_binary vim vim
+
+    ask_wifi_params
+    ;;
+  nm)
+    check_binary nmcli network-manager
+
+    nm_wifi_params "$1"
+    ;;
+  *)
+    echo "usage: $0 [method [...]]"
+    echo
+    echo "Methods:"
+    echo "  ask            Ask for WiFi parameters."
+    echo "  nm  [conn-id]  Fetch parameters using network-manager."
+    exit 1
+    ;;
+esac
 
 if [ "$hidden" = "yes" ]
 then
