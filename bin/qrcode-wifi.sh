@@ -14,60 +14,97 @@ then
   exit 1
 fi
 
-authf=$(mktemp)
-ssidf=$(mktemp)
-pskf=$(mktemp)
-hiddenf=$(mktemp)
+auth=""
+ssid=""
+psk=""
+hidden="no"
 
-echo "nopass" >> $authf
-echo "############################" >> $authf
-echo "# Authentification method. #" >> $authf
-echo "#                          #" >> $authf
-echo "# WEP, WPA, nopass         #" >> $authf
-echo "############################" >> $authf
+ask_wifi_params() {
+  authf=$(mktemp)
+  ssidf=$(mktemp)
+  pskf=$(mktemp)
+  hiddenf=$(mktemp)
 
-echo "" >> $ssidf
-echo "############################" >> $ssidf
-echo "# SSID name.               #" >> $ssidf
-echo "############################" >> $ssidf
+  echo "nopass" >> $authf
+  echo "############################" >> $authf
+  echo "# Authentification method. #" >> $authf
+  echo "#                          #" >> $authf
+  echo "# WEP, WPA, nopass         #" >> $authf
+  echo "############################" >> $authf
 
-echo "" >> $pskf
-echo "############################" >> $pskf
-echo "# Preshared key.           #" >> $pskf
-echo "############################" >> $pskf
+  echo "" >> $ssidf
+  echo "############################" >> $ssidf
+  echo "# SSID name.               #" >> $ssidf
+  echo "############################" >> $ssidf
 
-echo "false" >> $hiddenf
-echo "############################" >> $hiddenf
-echo "# Hidden SSID.             #" >> $hiddenf
-echo "############################" >> $hiddenf
+  echo "" >> $pskf
+  echo "############################" >> $pskf
+  echo "# Preshared key.           #" >> $pskf
+  echo "############################" >> $pskf
 
-vim $authf
-vim $ssidf
-auth="$(grep . $authf | grep -v '^#')"
+  echo "no" >> $hiddenf
+  echo "############################" >> $hiddenf
+  echo "# Hidden SSID. yes/no      #" >> $hiddenf
+  echo "############################" >> $hiddenf
 
-if [ -z "$auth" ]
+  vim $authf
+  vim $ssidf
+  auth="$(grep . $authf | grep -v '^#')"
+
+  if [ -z "$auth" ]
+  then
+    auth="nopass"
+  fi
+
+  if [ "$auth" != "nopass" ]
+  then
+    vim $pskf
+  fi
+
+  vim $hiddenf
+
+
+  ssid="$(grep . $ssidf | grep -v '^#')"
+  psk="$(grep . $pskf | grep -v '^#')"
+  hidden="$(grep . $hiddenf | grep -v '^#')"
+
+  rm $pskf
+  rm $ssidf
+  rm $hiddenf
+  rm $authf
+}
+
+nm_get() {
+  conn_id=$1
+  field=$2
+  echo "$(nmcli -t -m tabular -s -f $field connection show $conn_id)"
+}
+nm_wifi_params() {
+  conn_id="$1"
+  ssid="$(nm_get $conn_id 802-11-wireless.ssid)"
+  case "$(nm_get $conn_id 802-11-wireless-security.key-mgmt)" in
+    "wpa-psk")
+      auth="WPA"
+      psk="$(nm_get $conn_id 802-11-wireless-security.psk)";;
+    "none")
+      auth="WEP"
+      idx=$(nm_get $conn_id 802-11-wireless-security.wep-tx-keyidx)
+      psk="$(nm_get $conn_id 802-11-wireless-security.wep-key$idx)"
+      ;;
+    *)
+      auth="nopass"
+  esac
+  hidden="$(nm_get $conn_id 802-11-wireless.hidden)"
+}
+
+if [ -z "$1" ]
 then
-  auth="nopass"
+  ask_wifi_params
+else
+  nm_wifi_params "$1"
 fi
 
-if [ "$auth" != "nopass" ]
-then
-  vim $pskf
-fi
-
-vim $hiddenf
-
-
-ssid="$(grep . $ssidf | grep -v '^#')"
-psk="$(grep . $pskf | grep -v '^#')"
-hidden="$(grep . $hiddenf | grep -v '^#')"
-
-rm $pskf
-rm $ssidf
-rm $hiddenf
-rm $authf
-
-if [ "$hidden" = "true" ]
+if [ "$hidden" = "yes" ]
 then
   hidden="H:true"
 else
