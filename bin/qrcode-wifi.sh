@@ -124,6 +124,14 @@ nm_wifi_params() {
 check_binary qrencode qrencode
 check_binary feh feh
 
+usage() {
+  echo "usage: $(basename $0) [method [...]]"
+  echo
+  echo "Methods:"
+  echo "  ask         Ask for WiFi parameters."
+  echo "  nm conn-id  Fetch parameters using network-manager."
+}
+
 method="$1"
 if [ $# = 0 ]
 then
@@ -140,14 +148,18 @@ case "$method" in
   nm)
     check_binary nmcli network-manager
 
-    nm_wifi_params "$1"
+    if [ -n "$1" ]
+    then
+      nm_wifi_params "$1"
+    else
+      echo "error: expected conn-id."
+      echo
+      usage
+      exit 1
+    fi
     ;;
   *)
-    echo "usage: $(basename $0) [method [...]]"
-    echo
-    echo "Methods:"
-    echo "  ask            Ask for WiFi parameters."
-    echo "  nm  [conn-id]  Fetch parameters using network-manager."
+    usage
     exit 1
     ;;
 esac
