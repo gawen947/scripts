@@ -143,7 +143,7 @@ case "$method" in
     nm_wifi_params "$1"
     ;;
   *)
-    echo "usage: $0 [method [...]]"
+    echo "usage: $(basename $0) [method [...]]"
     echo
     echo "Methods:"
     echo "  ask            Ask for WiFi parameters."
