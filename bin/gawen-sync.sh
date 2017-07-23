@@ -23,7 +23,7 @@
 #  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 NAME="gsync"
-VERSION="0.2"
+VERSION="0.3"
 
 # Default path and options
 CONFIGURATION_PATH="$HOME/.config/gsync/gsync.conf"
@@ -35,7 +35,7 @@ PROFILES_PATH="$HOME/$PROFILES_BASE"
 HISTORY_PATH="$HOME/$HISTORY_BASE"
 DIALOG="dialog" # could change with Xdialog
 RSYNC="rsync"
-RSYNC_OPTIONS="-avhrR --progress --delete"
+RSYNC_OPTIONS="-avhrR --progress"
 
 # We need some colors
 # Regular           Bold                Underline           High Intensity      BoldHigh Intens     Background          High Intensity Backgrounds
@@ -198,6 +198,12 @@ then
   exit 1
 fi
 
+if [ ! -r "$profile_path"/no-delete ]
+then
+  rsync_options="$rsync_options --delete"
+  with_delete="true"
+fi
+
 echo -e "Profile selected ${Blu}$profile${RCol}:${BWhi}"
 cat "$profile_path"/desc
 echo -e "${RCol}"
@@ -233,6 +239,13 @@ preprocess() {
     fi
   done
 }
+
+if [ -n "$with_delete" ]
+then
+  info "Sync ${BRed}with${RCol} remote deletion."
+else
+  info "Sync ${BGre}without${RCol} remote deletion."
+fi
 
 if [ -r "$profile_path"/options ]
 then
