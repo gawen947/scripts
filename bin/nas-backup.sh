@@ -268,17 +268,14 @@ do_component() {
   then
     info "Loading exclude patterns."
     preprocess "$component_path"/exclude "$exclude_preprocessed"
+    exclude_option="--exclude-from=$exclude_preprocessed"
   fi
-  exclude_option="--exclude-from=$exclude_preprocessed"
   if [ -r "$component_path"/include ]
   then
     info "Loading include patterns."
     preprocess "$component_path"/include "$include_preprocessed"
     include_option="--include-from=$profile_path/include"
   fi
-
-  # Always ignore history
-  echo "$HISTORY_LOCAL_BASE" >> "$exclude_preprocessed"
 
   echo
   echo -e "${BWhi}Syncing ${BBlu}$component${BWhi} to ${BYel}$site${BWhi}...${RCol}"
@@ -303,10 +300,10 @@ do_component() {
   if ! $dry_run
   then
     now=$(date)
-    if [ "$ENABLE_LOCAL_HISTORY" = true ]
+    if [ "$ENABLE_LOCAL_HISTORY" = "true" ]
     then
       stamp="$now -- $component uploaded from me to $site ($REMOTE_HOST:$REMOTE_PATH)"
-      echo "$stamp" >> "$HISTORY_PATH"
+      echo "$stamp" >> "$HISTORY_LOCAL_PATH"
     fi
     if [ -n "$REMOTE_HISTORY" ]
     then
