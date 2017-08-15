@@ -321,7 +321,7 @@ do_component() {
     if [ -n "$REMOTE_HISTORY" ]
     then
       stamp="$now -- $component:$BASE_PATH uploaded from $USER@$(hostname) to $REMOTE_PATH"
-      ssh "$REMOTE_HOST" 'echo $stamp >> $REMOTE_HISTORY' 1>&2 </dev/null
+      ssh "$REMOTE_HOST" "echo $stamp >> $REMOTE_HISTORY" 1>&2 </dev/null
     fi
   fi
 }
