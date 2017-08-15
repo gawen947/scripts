@@ -33,7 +33,7 @@ SITES_PATH="$CONFIG_PATH"
 HISTORY_LOCAL_BASE="$CONFIG_BASE/history"
 HISTORY_LOCAL_PATH="$HOME/$HISTORY_LOCAL_BASE"
 RSYNC="rsync"
-RSYNC_OPTIONS="-avhrR --progress"
+RSYNC_OPTIONS="-avhr --progress"
 
 # We need some colors
 # Regular           Bold                Underline           High Intensity      BoldHigh Intens     Background          High Intensity Backgrounds
@@ -154,10 +154,10 @@ site_path="$SITES_PATH"/"$site"
 # <site>/<component>/
 # <site>/<component>/conf
 #   - REMOTE_PATH: Path of this component on the NAS
+#   - BASE_PATH: Directory from which the sync is done.
 #   - REMOTE_HISTORY (optional): Path to the history file on the NAS
 #   - NO_DELETE (optional): Do not delete remote file if local copy doesn't exists
 #   - RSYNC_EXTRA_OPTIONS (optional): Options added to the rsync command line
-# <site>/<component>/files               : see rsync --files-from
 # <site>/<component>/exclude   (optional): see rsync --exclude
 # <site>/<component>/include   (optional): see rsync --include-from
 # <site>/<component>/no-delete (optional): see rsync --delete
@@ -229,11 +229,11 @@ do_component() {
     exit 1
   fi
 
-  if [ ! -r "$component_path/files" ]
+  if [ -z "$BASE_PATH" ]
   then
-    error "The files was not found in the component."
-    error "This is a list of source files"
-    error "for this synchronization profile."
+    error "The base path (BASE_PATH) was not configured"
+    error "in the component configuration ($component_path/conf)."
+    exit 1
   fi
 
   NO_DELETE=$(echo "$NO_DELETE" | tr '[:upper:]' '[:lower:]')
@@ -268,7 +268,6 @@ do_component() {
     preprocess "$component_path"/include "$include_preprocessed"
     include_option="--include-from=$profile_path/include"
   fi
-  preprocess "$component_path"/files "$files_preprocessed"
 
   # Always ignore history
   echo "$HISTORY_LOCAL_BASE" >> "$exclude_preprocessed"
@@ -282,9 +281,9 @@ do_component() {
   echo
 
   set -x
-  "$RSYNC" $rsync_options --files-from="$files_preprocessed" \
+  "$RSYNC" $rsync_options \
            $exclude_option $include_option \
-           "$HOME" \
+           "$BASE_PATH"/ \
            "$REMOTE_HOST":"$REMOTE_PATH"
   set +x
 
@@ -308,10 +307,9 @@ if [ -n "$component" ]
 then
   do_component "$site_path/$component"
 else
-  find "$site_path" -type d -maxdepth 1 | while read component_path
+  find "$site_path" -type d -mindepth 1 -maxdepth 1 | while read component_path
   do
     [ ! -d "$component_path" -o \
-      ! -r "$component_path"/files -o \
       ! -r "$component_path"/conf ] && continue
     do_component "$component_path"
   done
