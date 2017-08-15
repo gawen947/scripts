@@ -93,7 +93,7 @@ check_binary "$RSYNC"
 rsync_options="$RSYNC_OPTIONS $RSYNC_EXTRA_OPTIONS"
 
 dry_run=false
-while getopts ":hVn" argv
+while getopts ":hVRn" argv
 do
   case "$argv" in
   h)
