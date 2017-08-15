@@ -322,6 +322,14 @@ then
 else
   find "$site_path" -type d -mindepth 1 -maxdepth 1 | while read component_path
   do
+    component=$(basename "$component_path")
+
+    # Components that start with '_' have to be selected manually.
+    if echo "$component" | grep "^_" > /dev/null
+    then
+      continue
+    fi
+
     [ ! -d "$component_path" -o \
       ! -r "$component_path"/conf ] && continue
     do_component "$component_path"
