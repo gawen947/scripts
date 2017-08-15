@@ -315,13 +315,13 @@ do_component() {
     now=$(date)
     if [ "$ENABLE_LOCAL_HISTORY" = "true" ]
     then
-      stamp="$now -- $component uploaded from me to $site ($REMOTE_HOST:$REMOTE_PATH)"
+      stamp="$now -- $component:$BASE_PATH uploaded from me to $site ($REMOTE_HOST:$REMOTE_PATH)"
       echo "$stamp" >> "$HISTORY_LOCAL_PATH"
     fi
     if [ -n "$REMOTE_HISTORY" ]
     then
-      stamp="$now -- $component uploaded from $USER@$(hostname) to me"
-      ssh "$REMOTE_HOST" "echo $stamp >> $REMOTE_HISTORY" 1>&2
+      stamp="$now -- $component:$BASE_PATH uploaded from $USER@$(hostname) to $REMOTE_PATH"
+      ssh "$REMOTE_HOST" 'echo $stamp >> $REMOTE_HISTORY' 1>&2 </dev/null
     fi
   fi
 }
@@ -332,7 +332,6 @@ then
 else
   find "$site_path" -type d -mindepth 1 -maxdepth 1 | while read component_path
   do
-    echo "now doing '$component_path' => '$component'"
     component=$(basename "$component_path")
 
     # Components that start with '_' have to be selected manually.
@@ -345,8 +344,6 @@ else
       ! -r "$component_path"/conf ] && continue
 
     do_component "$component_path"
-
-    echo "done with $component_path"
   done
 fi
 
