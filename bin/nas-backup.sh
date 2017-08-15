@@ -29,7 +29,7 @@ VERSION="0.1"
 CONFIG_BASE=".config/nas-backup"
 CONFIG_PATH="$HOME/$CONFIG_BASE"
 CONFIG_FILE_PATH="$CONFIG_PATH/nas-backup.conf"
-SITES_PATH="$CONFIG_PATH/sites"
+SITES_PATH="$CONFIG_PATH"
 HISTORY_LOCAL_BASE="$CONFIG_BASE/history"
 HISTORY_LOCAL_PATH="$HOME/$HISTORY_LOCAL_BASE"
 RSYNC="rsync"
@@ -177,7 +177,7 @@ then
   error "for this site (REMOTE_HOST)."
   exit 1
 else
-  info "Loading site configuration."
+  info "Loading ${BCya}$site${RCol} site configuration."
   . "$site_path/conf"
 fi
 
@@ -218,7 +218,7 @@ do_component() {
     error "This mandatory file specifies the path of this component"
     error "on the NAS (REMOTE_PATH) along with other options."
   else
-    info "Loading $component configuration."
+    info "Loading ${BBlu}$component${RCol} component configuration."
     . "$component_path/conf"
   fi
 
@@ -239,19 +239,19 @@ do_component() {
   NO_DELETE=$(echo "$NO_DELETE" | tr '[:upper:]' '[:lower:]')
   case "$NO_DELETE" in
   true|yes|1|y)
+    with_delete=""
+    ;;
+  *)
     rsync_options="$rsync_options --delete"
     with_delete="true"
     ;;
-  *)
-    ;;
   esac
 
-  echo -e "Syncing component ${Blu}$profile${RCol}."
   if [ -n "$with_delete" ]
   then
-    info "Sync ${Blu}$component${RCol} to $site ${BRed}with${RCol} remote deletion."
+    info "Sync ${BBlu}$component${RCol} to ${BCya}$site${RCol} ${BRed}with${RCol} remote deletion."
   else
-    info "Sync ${Blu}$component${RCol} to $site ${BGre}without${RCol} remote deletion."
+    info "Sync ${BBlu}$component${RCol} to ${BCya}$site${RCol} ${BGre}without${RCol} remote deletion."
   fi
 
   rsync_options="$rsync_options $RSYNC_EXTRA_OPTIONS"
@@ -268,7 +268,7 @@ do_component() {
     preprocess "$component_path"/include "$include_preprocessed"
     include_option="--include-from=$profile_path/include"
   fi
-  preprocess files "$profile_path"/files "$files_preprocessed"
+  preprocess "$component_path"/files "$files_preprocessed"
 
   # Always ignore history
   echo "$HISTORY_LOCAL_BASE" >> "$exclude_preprocessed"
@@ -310,6 +310,9 @@ then
 else
   find "$site_path" -type d -maxdepth 1 | while read component_path
   do
+    [ ! -d "$component_path" -o \
+      ! -r "$component_path"/files -o \
+      ! -r "$component_path"/conf ] && continue
     do_component "$component_path"
   done
 fi
