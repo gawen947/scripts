@@ -303,7 +303,7 @@ do_component() {
   then
     if [ "$DO_644" = "true" ]
     then
-      info "Final chomd 755/644..."
+      info "Final chmod 755/644..."
       ssh "$REMOTE_HOST" "find '$REMOTE_PATH' -type d -exec chmod 755 {} \;; find '$REMOTE_PATH' -type f -exec chmod 644 {} \;"
     fi
 
