@@ -159,6 +159,7 @@ site_path="$SITES_PATH"/"$site"
 #   - NO_DELETE (optional): Do not delete remote file if local copy doesn't exists
 #   - RSYNC_EXTRA_OPTIONS (optional): Options added to the rsync command line
 #   - DO_644 (optional): Do a chmod 755 on directory and 644 on files on the remote.
+# <site>/<component>/files     (optional): see rsync --files-from
 # <site>/<component>/exclude   (optional): see rsync --exclude
 # <site>/<component>/include   (optional): see rsync --include-from
 # <site>/<component>/no-delete (optional): see rsync --delete
@@ -274,7 +275,13 @@ do_component() {
   then
     info "Loading include patterns."
     preprocess "$component_path"/include "$include_preprocessed"
-    include_option="--include-from=$profile_path/include"
+    include_option="--include-from=$include_preprocessed"
+  fi
+  if [ -r "$component_path"/files ]
+  then
+    info "Loading files list."
+    preprocess "$component_path"/files "$files_preprocessed"
+    files_option="--files-from=$files_preprocessed"
   fi
 
   echo
@@ -287,11 +294,10 @@ do_component() {
 
   set -x
   "$RSYNC" $rsync_options \
-           $exclude_option $include_option \
+           $exclude_option $include_option $files_option \
            "$BASE_PATH"/ \
            "$REMOTE_HOST":"$REMOTE_PATH"
   set +x
-
 
   if ! $dry_run
   then
