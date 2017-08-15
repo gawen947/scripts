@@ -209,8 +209,8 @@ preprocess() {
 }
 
 do_component() {
-  component_name="$1"
-  component_path="$2"
+  component_path="$1"
+  component=$(basename "$component_path")
 
   if [ ! -r "$component_path/conf" ]
   then
@@ -218,7 +218,7 @@ do_component() {
     error "This mandatory file specifies the path of this component"
     error "on the NAS (REMOTE_PATH) along with other options."
   else
-    info "Loading $component_name configuration."
+    info "Loading $component configuration."
     . "$component_path/conf"
   fi
 
@@ -303,5 +303,15 @@ do_component() {
     fi
   fi
 }
+
+if [ -n "$component" ]
+then
+  do_component "$site_path/$component"
+else
+  find "$site_path" -type d -maxdepth 1 | while read component_path
+  do
+    do_component "$component_path"
+  done
+fi
 
 rm -f "$exclude_preprocessed" "$include_preprocessed" "$files_preprocessed"
