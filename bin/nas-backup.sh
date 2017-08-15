@@ -90,7 +90,7 @@ fi
 
 check_binary "$RSYNC"
 
-rsync_options="$RSYNC_OPTIONS $RSYNC_EXTRA_OPTIONS"
+site_rsync_options="$RSYNC_OPTIONS $RSYNC_EXTRA_OPTIONS"
 
 dry_run=false
 while getopts ":hVRn" argv
@@ -111,7 +111,7 @@ do
     exit 1
     ;;
   n)
-    rsync_options="$rsync_options -n"
+    site_rsync_options="$rsync_options -n"
     dry_run=true
     ;;
   \?)
@@ -219,6 +219,8 @@ do_component() {
   echo > "$include_preprocessed"
   echo > "$files_preprocessed"
 
+  rsync_options="$site_rsync_options"
+
   if [ ! -r "$component_path/conf" ]
   then
     error "The configuration file was not found in the component."
@@ -270,6 +272,9 @@ do_component() {
 
   rsync_options="$rsync_options $RSYNC_EXTRA_OPTIONS"
 
+  exclude_option=""
+  include_option=""
+  files_option=""
   if [ -r "$component_path"/exclude ]
   then
     info "Loading exclude patterns."
