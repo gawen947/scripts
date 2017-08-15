@@ -23,7 +23,7 @@
 #  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 NAME="nas-backup"
-VERSION="0.2"
+VERSION="0.3"
 
 # Default path and options
 CONFIG_BASE=".config/nas-backup"
