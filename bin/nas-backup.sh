@@ -292,13 +292,14 @@ do_component() {
            "$REMOTE_HOST":"$REMOTE_PATH"
   set +x
 
-  if [ "$DO_644" = "true" ]
-  then
-    ssh "$REMOTE_HOST" "find '$REMOTE_PATH' -type d -exec chmod 755 {} \;; find '$REMOTE_PATH' -type f -exec chmod 644 {} \;"
-  fi
 
   if ! $dry_run
   then
+    if [ "$DO_644" = "true" ]
+    then
+      ssh "$REMOTE_HOST" "find '$REMOTE_PATH' -type d -exec chmod 755 {} \;; find '$REMOTE_PATH' -type f -exec chmod 644 {} \;"
+    fi
+
     now=$(date)
     if [ "$ENABLE_LOCAL_HISTORY" = "true" ]
     then
