@@ -1,4 +1,4 @@
-e#!/bin/sh
+#!/bin/sh
 #  Copyright (c) 2016, David Hauweele <david@hauweele.net>
 #  All rights reserved.
 #
