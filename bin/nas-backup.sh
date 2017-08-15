@@ -257,9 +257,9 @@ do_component() {
 
   if [ "$DO_644" = "true" ]
   then
-    info "Final 755/644 ${BRed}enabled${RCol}."
+    info "Final chmod 755/644 ${BRed}enabled${RCol}."
   else
-    info "Final 755/644 ${BGre}disabled${RCol}."
+    info "Final chmod 755/644 ${BGre}disabled${RCol}."
   fi
 
   rsync_options="$rsync_options $RSYNC_EXTRA_OPTIONS"
@@ -297,6 +297,7 @@ do_component() {
   then
     if [ "$DO_644" = "true" ]
     then
+      info "Final chomd 755/644..."
       ssh "$REMOTE_HOST" "find '$REMOTE_PATH' -type d -exec chmod 755 {} \;; find '$REMOTE_PATH' -type f -exec chmod 644 {} \;"
     fi
 
