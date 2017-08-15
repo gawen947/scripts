@@ -150,14 +150,15 @@ site_path="$SITES_PATH"/"$site"
 # <site>/conf
 #   - REMOTE_HOST: FQDN or IP of the NAS
 #   - ENABLE_LOCAL_HISTORY (optional) : Enable local history of syncs.
+#   - REMOTE_HISTORY (optional): Path to the history file on the NAS
 # <site>/<component>
 # <site>/<component>/
 # <site>/<component>/conf
 #   - REMOTE_PATH: Path of this component on the NAS
 #   - BASE_PATH: Directory from which the sync is done.
-#   - REMOTE_HISTORY (optional): Path to the history file on the NAS
 #   - NO_DELETE (optional): Do not delete remote file if local copy doesn't exists
 #   - RSYNC_EXTRA_OPTIONS (optional): Options added to the rsync command line
+#   - DO_644 (optional): Do a chmod 755 on directory and 644 on files on the remote.
 # <site>/<component>/exclude   (optional): see rsync --exclude
 # <site>/<component>/include   (optional): see rsync --include-from
 # <site>/<component>/no-delete (optional): see rsync --delete
@@ -254,6 +255,13 @@ do_component() {
     info "Sync ${BBlu}$component${RCol} to ${BCya}$site${RCol} ${BGre}without${RCol} remote deletion."
   fi
 
+  if [ "$DO_644" = "true" ]
+  then
+    info "Final 755/644 ${BRed}enabled${RCol}."
+  else
+    info "Final 755/644 ${BGre}disabled${RCol}."
+  fi
+
   rsync_options="$rsync_options $RSYNC_EXTRA_OPTIONS"
 
   if [ -r "$component_path"/exclude ]
@@ -287,6 +295,11 @@ do_component() {
            "$REMOTE_HOST":"$REMOTE_PATH"
   set +x
 
+  if [ "$DO_644" = "true" ]
+  then
+    ssh "$REMOTE_HOST" "find '$REMOTE_PATH' -type d -exec chmod 755 {} \;; find '$REMOTE_PATH' -type f -exec chmod 644 {} \;"
+  fi
+
   if ! $dry_run
   then
     now=$(date)
@@ -298,7 +311,7 @@ do_component() {
     if [ -n "$REMOTE_HISTORY" ]
     then
       stamp="$now -- $component uploaded from $USER@$(hostname) to me"
-      ssh "$remote" "echo $stamp >> $REMOTE_HISTORY" 1>&2
+      ssh "$REMOTE_HOST" "echo $stamp >> $REMOTE_HISTORY" 1>&2
     fi
   fi
 }
