@@ -84,11 +84,11 @@ esac
 infile="$file"
 outfile="$output"
 
-ext=$(echo "$basefile" | awk -F . '{print $NF}')
-noext=$(basename "$infile" .$ext)
-encfile=$(mktemp -u "$noextension-encoding-XXXXXXXXXX")
-rm -f "$newfile"
-encfile="$newfile.mkv"
+outext=$(echo "$outfile" | awk -F . '{print $NF}')
+outnoext=$(basename "$outfile" .$outext)
+encfile=$(mktemp -u "$outnoext.encoding.XXXXXXXXXX")
+rm -f "$encfile"
+encfile="$encfile.mkv"
 
 cmd="ffmpeg -i \"$infile\" -map 0 $v_part $a_part \"$encfile\""
 echo $cmd
