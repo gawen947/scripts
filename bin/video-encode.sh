@@ -1,8 +1,6 @@
 #!/bin/sh
 # Copyright (c) 2012 David Hauweele <david@hauweele.net>
 
-ENCODED="encoded"
-
 if [ $# = 3 ]
 then
   file="$1"
@@ -15,7 +13,7 @@ then
   vfield="$3"
   afield="$4"
 else
-  echo "usage: $0 <input-file> [output-file] <vcodec:quality> <acodec:quality>"
+  echo "usage: $0 <input-file> [output-file] <vcodec:quality<:tune>> <acodec:quality>"
   exit 1
 fi
 
@@ -26,6 +24,7 @@ then
   exit 1
 fi
 
+vtune=$(echo $vfield | cut -d':' -f 3)
 vqual=$(echo $vfield | cut -d':' -f 2)
 vcodec=$(echo $vfield | cut -d':' -f 1)
 if [ "$vqual" = "$vfield" ]
@@ -40,7 +39,6 @@ then
   aqual=2
 fi
 
-vqual=${vqual}k
 case "$vcodec"
   in
   vp9|vpx)
@@ -49,6 +47,23 @@ case "$vcodec"
     v_part="-codec:v libvpx -quality good -cpu-used 0 -crf 5 -qmin 0 -qmax 50 -b:v $vqual";;
   vp3|theora)
     v_part="-codec:v libtheora -b:v $vqual";;
+  [hx]264)
+    # X264
+    #  Video quality: 0 - 51 (recommended 18-28 or 20-22)
+    #  Tune can be film or anime or others
+    if [ -z "$vtune" ]
+    then
+      echo "expect tune from:"
+      echo "film animation grain stillimage psnr ssim fastdecode zerolatency"
+      exit 1
+    fi
+
+    v_part="-codec:v libx264 -preset slow -crf $vqual -tune $vtune";;
+  [hx]265)
+    # X265
+    #  Same as X264 basically...
+    #  But we don't have tune for films.
+    v_part="-codec:v libx265 -preset slow -crf $vqual";;
   copy)
     v_part="-codec:v copy";;
   *)
@@ -75,7 +90,6 @@ opwd=$(pwd)
 basedir=$(dirname "$file")
 basefile=$(basename "$file")
 cd "$basedir"
-mkdir -p "$ENCODED"
 noextension=$(basename "$basefile" .$(echo "$basefile" | awk -F . '{print $NF}'))
 newfile=$(mktemp -u "$noextension-encoding-XXXXXXXXXX")
 rm -f "$newfile"
@@ -85,7 +99,6 @@ echo $cmd
 eval $cmd
 if [ "$?" = 0 ]
 then
-  mv "$basefile" "$ENCODED"
   if [ -n "$output" ]
   then
     mv "$newfile" "$output"
@@ -95,6 +108,7 @@ then
 else
   rm $newfile
   echo "Failed!"
+  cd $opwd
   exit 1
 fi
 
