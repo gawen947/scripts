@@ -1,19 +1,14 @@
 #!/bin/sh
 # Copyright (c) 2012 David Hauweele <david@hauweele.net>
 
-if [ $# = 3 ]
-then
-  file="$1"
-  vfield="$2"
-  afield="$3"
-elif [ $# = 4 ]
+if [ $# = 4 ]
 then
   file="$1"
   output="$2"
   vfield="$3"
   afield="$4"
 else
-  echo "usage: $0 <input-file> [output-file] <vcodec:quality<:tune>> <acodec:quality>"
+  echo "usage: $0 <input-file> <output-file> <vcodec:quality<:tune>> <acodec:quality>"
   exit 1
 fi
 
@@ -86,30 +81,25 @@ case "$acodec"
     ;;
 esac
 
-opwd=$(pwd)
-basedir=$(dirname "$file")
-basefile=$(basename "$file")
-cd "$basedir"
-noextension=$(basename "$basefile" .$(echo "$basefile" | awk -F . '{print $NF}'))
-newfile=$(mktemp -u "$noextension-encoding-XXXXXXXXXX")
+infile="$file"
+outfile="$output"
+
+ext=$(echo "$basefile" | awk -F . '{print $NF}')
+noext=$(basename "$infile" .$ext)
+encfile=$(mktemp -u "$noextension-encoding-XXXXXXXXXX")
 rm -f "$newfile"
-newfile=${newfile}.mkv
-cmd="ffmpeg -i \"$basefile\" -map 0 $v_part $a_part \"$newfile\""
+encfile="$newfile.mkv"
+
+cmd="ffmpeg -i \"$infile\" -map 0 $v_part $a_part \"$encfile\""
 echo $cmd
 eval $cmd
 if [ "$?" = 0 ]
 then
-  if [ -n "$output" ]
-  then
-    mv "$newfile" "$output"
-  else
-    mv "$newfile" "$noextension.mkv"
-  fi
+  mv "$encfile" "$outfile"
 else
-  rm $newfile
+  rm $encfile
   echo "Failed!"
-  cd $opwd
   exit 1
 fi
 
-cd $opwd
+exit 0
