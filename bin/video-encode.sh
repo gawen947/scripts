@@ -97,7 +97,7 @@ if [ "$?" = 0 ]
 then
   mv "$encfile" "$outfile"
 else
-  rm $encfile
+  rm "$encfile"
   echo "Failed!"
   exit 1
 fi
