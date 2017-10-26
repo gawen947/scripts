@@ -92,7 +92,7 @@ encfile="$encfile.mkv"
 
 cmd="ffmpeg -i \"$infile\" -map 0 $v_part $a_part \"$encfile\""
 echo $cmd
-eval $cmd
+eval $cmd < /dev/null
 if [ "$?" = 0 ]
 then
   mv "$encfile" "$outfile"
