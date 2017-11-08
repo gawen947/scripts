@@ -7,11 +7,17 @@ then
   output="$2"
   vfield="$3"
   afield="$4"
+elif [ $# = 5 ]
+then
+  file="$1"
+  output="$2"
+  extra="$3"
+  vfield="$4"
+  afield="$5"
 else
   echo "usage: $0 <input-file> <output-file> <vcodec:quality<:tune>> <acodec:quality>"
   exit 1
 fi
-
 
 if [ ! \( -f "$file" -a -r "$file" \) ]
 then
@@ -67,8 +73,7 @@ case "$vcodec"
     ;;
 esac
 
-case "$acodec"
-  in
+case "$acodec" in
   ogg|vorbis)
     a_part="-codec:a libvorbis -q:a $aqual";;
   flac)
@@ -81,6 +86,13 @@ case "$acodec"
     ;;
 esac
 
+case "$extra" in
+  subfix)
+    sub_part="-c:s copy";;
+  *)
+    ;;
+esac
+
 infile="$file"
 outfile="$output"
 
@@ -90,7 +102,7 @@ encfile=$(mktemp -u "$outnoext.encoding.XXXXXXXXXX")
 rm -f "$encfile"
 encfile="$encfile.mkv"
 
-cmd="ffmpeg -i \"$infile\" -map 0 $v_part $a_part \"$encfile\""
+cmd="ffmpeg -i \"$infile\" $sub_part -map 0 $v_part $a_part \"$encfile\""
 echo $cmd
 eval $cmd < /dev/null
 if [ "$?" = 0 ]
