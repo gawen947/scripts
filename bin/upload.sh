@@ -4,6 +4,7 @@
 UP_URL="smeagol.hauweele.net"
 UP_PATH="public_html/upload"
 DOWN_URL="http://hauweele.net/~$USER/upload"
+DOWN_URL2="http://apostr.ovh/~$USER/upload"
 DEFAULT_UPNAME="${USER}_$(date +"%Y-%m-%d")"
 MKTEMP_TEMPLATE="XXXXXX"
 TAR_COMPRESSION="Jv"
@@ -111,4 +112,4 @@ fi
 echo "" 1>&2
 echo "Uploaded:" 1>&2
 echo " $DOWN_URL/$upname"
-
+echo " $DOWN_URL2/$upname"
