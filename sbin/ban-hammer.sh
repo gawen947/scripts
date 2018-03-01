@@ -14,6 +14,7 @@ case "$(uname -s)" in
     # A shutdown script save IPs in the /etc/ip.ban file.
     #   /etc/rc.shutdown: pfctl -t banned -T show > /etc/ip.ban
     pfctl -t banned -T add "$1"
+    pfctl -k "$1"
     exit 0
     ;;
   *)
