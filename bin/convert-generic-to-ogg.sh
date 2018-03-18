@@ -12,8 +12,16 @@ case "$#" in
     clamp_rate="$1"
     original_path="$2"
     ;;
+  3)
+    if [ "$1" = "--force" ]
+    then
+      force_rate=true
+    fi
+    clamp_rate="$2"
+    original_path="$3"
+    ;;
   *)
-    echo "usage: $0 [[clamp-rate] input-file]"
+    echo "usage: $0 [[[--force] clamp-rate] input-file]"
     exit 1
     ;;
 esac
@@ -33,14 +41,17 @@ date=$(echo "$info" | grep "Recorded date  " | head -n1 | sed "s/.*: //")
 genre=$(echo "$info" | grep "Genre  " | head -n1 | sed "s/.*: //")
 track=$(echo "$info" | grep "Track name/Position  " | head -n1 | sed "s/.*: //")
 total=$(echo "$info" | grep "Track name/Total  "  | head -n1 | sed "s/.*: //")
-rate=$(echo "$info" | grep "Bit rate" | grep -E -o "[[:digit:]]+ Kbps" | sed "s/ Kbps//")
-alt_rate=$(echo "$info" | grep "Overall bit rate" | grep -E -o "[[:digit:]]+ Kbps" | sed "s/ Kbps//")
+rate=$(echo "$info" | grep "Bit rate" | grep -E -o "[0-9\.]+ Kbps" | sed 's/\..*$//' | sed "s/ Kbps//")
+alt_rate=$(echo "$info" | grep "Overall bit rate" | grep -E -o "[0-9\.]+ Kbps" | sed 's/\..*$//' | sed "s/ Kbps//")
 if [ -z "$rate" -a -z "$alt_rate" ]
 then
   # Maybe a newer version of mediainfo
-  rate=$(echo "$info" | grep "Bit rate" | grep -E -o "[[:digit:]]+ kb/s" | sed "s# kb/s##")
-  alt_rate=$(echo "$info" | grep "Overall bit rate" | grep -E -o "[[:digit:]]+ kb/s" | sed "s# kb/s##")
+  rate=$(echo "$info" | grep "Bit rate" | grep -E -o "[0-9\.]+ kb/s" | sed 's/\..*$//' | sed "s# kb/s##")
+  alt_rate=$(echo "$info" | grep "Overall bit rate" | grep -E -o "[0-9\.]+ kb/s" | sed 's/\..*$//' | sed "s# kb/s##")
 fi
+
+rate=$(echo "$rate" | head -n1)
+alt_rate=$(echo "$alt_rate" | head -n1)
 
 # Decode
 normalized_extension=$(echo "$original_extension" | tr '[:upper:]' '[:lower:]')
@@ -99,7 +110,7 @@ else
 fi
 echo "================================="
 
-if [ "$rate" -ge "$clamp_rate" ]
+if [ "$force_rate" = "true" -o \( "$rate" -ge "$clamp_rate" \) ]
 then
   echo "clamp from ${rate}Kbps to ${clamp_rate}Kbps"
   rate="$clamp_rate"
