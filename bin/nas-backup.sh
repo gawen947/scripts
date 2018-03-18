@@ -107,8 +107,7 @@ do
     exit 0
     ;;
   R)
-    error "not implemented"
-    exit 1
+    reverse=true
     ;;
   n)
     site_rsync_options="$rsync_options -n"
@@ -303,10 +302,18 @@ do_component() {
   echo
 
   set -x
-  "$RSYNC" $rsync_options \
-           $exclude_option $include_option $files_option \
-           "$BASE_PATH"/ \
-           "$REMOTE_HOST":"$REMOTE_PATH"
+  if [ "$reverse" != "true" ]
+  then
+    "$RSYNC" $rsync_options \
+             $exclude_option $include_option $files_option \
+             "$BASE_PATH"/ \
+             "$REMOTE_HOST":"$REMOTE_PATH"
+  else
+    "$RSYNC" $rsync_options \
+             $exclude_option $include_option $files_option \
+             "$REMOTE_HOST":"$REMOTE_PATH" \
+             "$BASE_PATH"/
+  fi
   set +x
 
   if ! $dry_run
@@ -318,16 +325,32 @@ do_component() {
     fi
 
     now=$(date)
-    if [ "$ENABLE_LOCAL_HISTORY" = "true" ]
+
+    if [ "$reverse" = "true" ]
     then
-      stamp="$now -- $component:$BASE_PATH uploaded from me to $site ($REMOTE_HOST:$REMOTE_PATH)"
-      echo "$stamp" >> "$HISTORY_LOCAL_PATH"
+      if [ "$ENABLE_LOCAL_HISTORY" = "true" ]
+      then
+        stamp="$now -- $component:$BASE_PATH restored to me from $site ($REMOTE_HOST:$REMOTE_PATH)"
+        echo "$stamp" >> "$HISTORY_LOCAL_PATH"
+      fi
+      if [ -n "$REMOTE_HISTORY" ]
+      then
+        stamp="$now -- $component:$BASE_PATH restored to $USER@$(hostname) from $REMOTE_PATH"
+        ssh "$REMOTE_HOST" "echo $stamp >> $REMOTE_HISTORY" 1>&2 </dev/null
+      fi
+    else
+      if [ "$ENABLE_LOCAL_HISTORY" = "true" ]
+      then
+        stamp="$now -- $component:$BASE_PATH uploaded from me to $site ($REMOTE_HOST:$REMOTE_PATH)"
+        echo "$stamp" >> "$HISTORY_LOCAL_PATH"
+      fi
+      if [ -n "$REMOTE_HISTORY" ]
+      then
+        stamp="$now -- $component:$BASE_PATH uploaded from $USER@$(hostname) to $REMOTE_PATH"
+        ssh "$REMOTE_HOST" "echo $stamp >> $REMOTE_HISTORY" 1>&2 </dev/null
+      fi
     fi
-    if [ -n "$REMOTE_HISTORY" ]
-    then
-      stamp="$now -- $component:$BASE_PATH uploaded from $USER@$(hostname) to $REMOTE_PATH"
-      ssh "$REMOTE_HOST" "echo $stamp >> $REMOTE_HISTORY" 1>&2 </dev/null
-    fi
+
   fi
 }
 
