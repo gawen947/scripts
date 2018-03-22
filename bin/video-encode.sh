@@ -15,7 +15,7 @@ then
   vfield="$4"
   afield="$5"
 else
-  echo "usage: $0 <input-file> <output-file> <vcodec:quality<:tune>> <acodec:quality>"
+  echo "usage: $0 <input-file> <output-file> [subfix/nosub] <vcodec:quality<:tune>> <acodec:quality>"
   exit 1
 fi
 
@@ -89,7 +89,11 @@ esac
 case "$extra" in
   subfix)
     sub_part="-c:s copy";;
+  nosub)
+    sub_part="-sn";;
   *)
+    echo "Unrecognied extra parameter"
+    exit 1
     ;;
 esac
 
