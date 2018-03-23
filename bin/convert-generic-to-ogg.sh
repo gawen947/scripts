@@ -60,7 +60,7 @@ rm "$decoded"
 
 # Skip unsupported file formats.
 found=""
-for supported_extension in ogg flac mp3 wma oga aiff riff wav au mpc m4a aac webm mp4 mkv
+for supported_extension in ogg flac mp3 wma oga aiff riff wav au mpc m4a aac webm mp4 mkv ac3
 do
   if [ "$normalized_extension" = "$supported_extension" ]
   then
