@@ -87,6 +87,7 @@ case "$acodec" in
 esac
 
 case "$extra" in
+  "") ;;
   subfix)
     sub_part="-c:s copy";;
   nosub)
