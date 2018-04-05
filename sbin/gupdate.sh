@@ -49,11 +49,11 @@ case "$method" in
       echo "Upgrading locked $package from $origin"
 
       cd "/usr/ports/$origin"
-      pkg unlock -y "$package"
+      pkg unlock -y "$origin"
       make install clean
       make deinstall
       make reinstall
-      pkg lock -y "$package"
+      pkg lock -y "$origin"
     done
 
     cd "$_pwd"
