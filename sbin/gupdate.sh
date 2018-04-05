@@ -13,11 +13,11 @@ then
   method=apt
 elif [ "$os" = "FreeBSD" ]
 then
-  method=pkgng_portmaster
+  method=pkg
   case "$1" in
-    port)   method=portmaster;;
-    pkg)    method=pkgng;;
-    "")     method=pkgng;;
+    port)   method=port;;
+    pkg)    method=pkg;;
+    "")     method=pkg;;
     *)
       echo "Specify port or pkg (default: pkg)."
       exit 1
@@ -31,21 +31,32 @@ case "$method" in
     apt-get upgrade
     $CLEAN && apt-get clean
     ;;
-  pkgng)
+  pkg)
     pkg update
     pkg upgrade
     $CLEAN && pkg clean
     ;;
-  portmaster)
+  port)
     _pwd=$(pwd)
     cd /usr/ports
     make update
-    portmaster -a $PORTMASTER_EXTRA
+    echo
+
+    # Upgrade all locked ports
+    pkg lock -lq | while read package
+    do
+      origin=$(pkg query '%o' "$package")
+      echo "Upgrading locked $package from $origin"
+
+      cd "/usr/ports/$origin"
+      pkg unlock -y "$package"
+      make install clean
+      make deinstall
+      make reinstall
+      pkg lock -y "$package"
+    done
+
     cd "$_pwd"
-    ;;
-  pkgng_portmaster)
-    $0 pkg
-    $0 port
     ;;
   *)
     echo "Invalid method!"
