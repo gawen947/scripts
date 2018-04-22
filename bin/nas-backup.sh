@@ -23,7 +23,7 @@
 #  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 NAME="nas-backup"
-VERSION="0.3"
+VERSION="0.3.1"
 
 # Default path and options
 CONFIG_BASE=".config/nas-backup"
@@ -212,6 +212,13 @@ preprocess() {
 do_component() {
   component_path="$1"
   component=$(basename "$component_path")
+
+  # Reset options
+  REMOTE_PATH=""
+  BASE_PATH=""
+  NO_DELETE=""
+  RSYNC_EXTRA_OPTIONS=""
+  DO_644=""
 
   # Reset tmp files
   echo > "$exclude_preprocessed"
