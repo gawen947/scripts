@@ -22,7 +22,7 @@ shift; shift
 
 while true
 do
-  wp=$(find "$directory" -type f | sort -R | head -1)
+  wp=$(find "$directory" -L -type f | sort -R | head -1)
   echo $* "$wp"
   $* "$wp"
   sleep "$sleep_duration"
