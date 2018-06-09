@@ -6,6 +6,16 @@ then
   exit 1
 fi
 
+# Check that they aren't any other daemon running.
+# If there is, we kill him.
+pid_file="/tmp/wp-random_$DISPLAY.pid"
+if [ -r "$pid_file" ]
+then
+  echo "Existing wp-random daemon found. Killing it."
+  kill -TERM $(cat "$pid_file")
+fi
+echo "$$" > "$pid_file"
+
 sleep_duration="$1"
 directory="$2"
 shift; shift
