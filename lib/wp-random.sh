@@ -20,6 +20,12 @@ sleep_duration="$1"
 directory="$2"
 shift; shift
 
+if [ ! -d "$directory" ]
+then
+  echo "Not a directory."
+  exit 1
+fi
+
 while true
 do
   wp=$(find -L "$directory" -type f | sort -R | head -1)
