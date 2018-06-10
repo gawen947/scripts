@@ -18,6 +18,7 @@ if [ "$#" = 0 ]
 then
   echo "usage: $(basename $0) commands ..."
   echo "  status        Try to guess the current status."
+  echo "  sudo          Cache sudo usage for later commands."
   echo "  vga:(on|off)  Enable or disable the VGA output."
   echo "  lvds:(on|off) Enable or disable the LVDS output."
   echo "  iface:<name>  Change the active interface."
@@ -75,6 +76,10 @@ cmd_status() {
   # Ifaces
   echo -n "ifaces   : "
   ifconfig |grep "^[a-z0-9]*:" | cut -d':' -f1 | grep -v "lo0" | grep -v "pflog0" | grep -v "tun0" | xargs echo
+}
+
+cmd_sudo() {
+  sudo echo "sudo"
 }
 
 cmd_vga() {
@@ -135,6 +140,7 @@ while [ "$#" -gt 0 ]
 do
   case "$1" in
     status) cmd_status;;
+    sudo) cmd_sudo;;
     vga:*) cmd_vga $(getarg "$1");;
     lvds:*) cmd_lvds $(getarg "$1");;
     iface:*) cmd_iface $(getarg "$1");;
