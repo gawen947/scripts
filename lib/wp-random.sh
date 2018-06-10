@@ -26,10 +26,23 @@ then
   exit 1
 fi
 
+redraw_wp() {
+  echo $* "$wp"
+  $* "$wp"
+}
+
+dummy() {
+}
+
+# SIGUSR1 redraws the wallpaper (for example when you turn on VGA)
+# SIGUSR2 select another wallpaper
+trap "redraw_wp $*; wait" USR1
+trap "dummy" USR2
+
 while true
 do
   wp=$(find -L "$directory" -type f | sort -R | head -1)
-  echo $* "$wp"
-  $* "$wp"
-  sleep "$sleep_duration"
+  redraw_wp $*
+  sleep "$sleep_duration" &
+  wait
 done
