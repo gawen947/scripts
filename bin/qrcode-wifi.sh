@@ -121,6 +121,10 @@ nm_wifi_params() {
   hidden="$(nm_get $conn_id 802-11-wireless.hidden)"
 }
 
+do_escape() {
+  echo "$1" | sed -r 's/([\\":;])/\\\1/g'
+}
+
 check_binary qrencode qrencode
 check_binary feh feh
 
@@ -172,6 +176,10 @@ else
 fi
 
 qrcodef=$(mktemp)
+
+ssid=$(do_escape "$ssid")
+psk=$(do_escape "$psk")
+
 qrencode -s 10 -t png -o $qrcodef "WIFI:T:$auth;S:$ssid;P:$psk;$hidden;"
 feh $qrcodef
 rm $qrcodef
