@@ -257,7 +257,7 @@ do_component() {
     with_delete=""
     ;;
   *)
-    rsync_options="$rsync_options --delete"
+    rsync_options="$rsync_options --delete --delete-after --ignore-errors"
     with_delete="true"
     ;;
   esac
