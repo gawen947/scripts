@@ -31,6 +31,7 @@ artist=$(echo "$info" | grep "Performer  " | tail -n1 | sed "s/.*: //")
 album=$(echo "$info" | grep "Album  " | head -n1 | sed "s/.*: //")
 date=$(echo "$info" | grep "Recorded date  " | head -n1 | sed "s/.*: //")
 genre=$(echo "$info" | grep "Genre  " | head -n1 | sed "s/.*: //")
+isrc=$(echo "$info" | grep "ISRC" | head -n1 | sed "s/.*: //")
 track=$(echo "$info" | grep "Track name/Position  " | head -n1 | sed "s/.*: //")
 total=$(echo "$info" | grep "Track name/Total  "  | head -n1 | sed "s/.*: //")
 rate=$(echo "$info" | grep "Bit rate" | grep -E -o "[[:digit:]]+ Kbps" | sed "s/ Kbps//")
@@ -127,7 +128,7 @@ echo "Encode from $normalized_extension ${rate}Kbps to Vorbis q$quality ~${base_
 echo
 
 # Encode
-oggenc -t "$title" -a "$artist" -G "$genre" -l "$album" -d "$date" -n "$track/$total" -o "$new_path" -q "$quality" "$decoded"
+oggenc -t "$title" -a "$artist" -G "$genre" -l "$album" -d "$date" -N "$track" -o "$new_path" -q "$quality" "$decoded"
 
 # Clean
 rm "$decoded"
