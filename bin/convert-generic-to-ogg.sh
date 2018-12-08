@@ -26,14 +26,22 @@ new_path=$(dirname "$original_path")/$(basename "$original_path" ."$original_ext
 # Retrieve media information.
 info=$(mediainfo "$original_path")
 
+# Mediainfo has some weird way for handling artist, original artist and composer fields.
+# It regroup them in performer and sometime switch composer and artist.
 title=$(echo "$info" | grep "Track name  " | head -n1 | sed "s/.*: //")
 artist=$(echo "$info" | grep "Performer  " | tail -n1 | sed "s/.*: //")
 album=$(echo "$info" | grep "Album  " | head -n1 | sed "s/.*: //")
+album_artist=$(echo "$info" | grep "Album/Composer  " | head -n1 | sed "s/.*: //")
 date=$(echo "$info" | grep "Recorded date  " | head -n1 | sed "s/.*: //")
 genre=$(echo "$info" | grep "Genre  " | head -n1 | sed "s/.*: //")
+comment=$(echo "$info" | grep "Description  " | head -n1 | sed "s/.*: //")
 isrc=$(echo "$info" | grep "ISRC" | head -n1 | sed "s/.*: //")
 track=$(echo "$info" | grep "Track name/Position  " | head -n1 | sed "s/.*: //")
 total=$(echo "$info" | grep "Track name/Total  "  | head -n1 | sed "s/.*: //")
+disc=$(echo "$info" | grep "Part  "  | head -n1 | sed "s/.*: //")
+composer=$(echo "$info" | grep "Composer  "  | head -n1 | sed "s/.*: //")
+copyright=$(echo "$info" | grep "Copyright "  | head -n1 | sed "s/.*: //")
+url=$(echo "$info" | grep "Publisher  "  | head -n1 | sed "s/.*: //")
 rate=$(echo "$info" | grep "Bit rate" | grep -E -o "[[:digit:]]+ Kbps" | sed "s/ Kbps//")
 alt_rate=$(echo "$info" | grep "Overall bit rate" | grep -E -o "[[:digit:]]+ Kbps" | sed "s/ Kbps//")
 if [ -z "$rate" -a -z "$alt_rate" ]
@@ -128,7 +136,38 @@ echo "Encode from $normalized_extension ${rate}Kbps to Vorbis q$quality ~${base_
 echo
 
 # Encode
-oggenc -t "$title" -a "$artist" -G "$genre" -l "$album" -d "$date" -N "$track" -o "$new_path" -q "$quality" "$decoded"
+oggenc -o "$new_path" -q "$quality" "$decoded"
+
+tags=$(mktemp)
+tag() {
+  if [ -n "$2" ]
+  then
+    echo "$1=$2" >> "$tags"
+  fi
+}
+
+tag TITLE "$title"
+tag ARTIST "$artist"
+tag ALBUM "$album"
+tag ALBUMARTIST "$album_artist"
+tag DATE "$date"
+tag GENRE "$genre"
+tag DESCRIPTION "$comment"
+tag TRACKNUMBER "$track"
+tag TRACKTOTAL "$total"
+tag DISCNUMBER "$disc"
+tag COMPOSER "$composer"
+tag COPYRIGHT "$copyright"
+tag CONTACT "$url"
+
+# Tags
+echo "====="
+cat "$tags"
+echo "====="
+echo
+echo -n "Writing tags... "
+vorbiscomment -R -w -c "$tags" "$new_path"
+echo "done!"
 
 # Clean
-rm "$decoded"
+rm "$decoded" "$tags"
