@@ -8,7 +8,7 @@ no_trail() {
 file2track_reg() {
   file="$1"
   regex="$2"
-  track=$(echo "$file" | grep -oE "$regex" | grep -oE "[0-9]+")
+  track=$(echo "$file" | grep -oE "$regex" | grep -oE "[0-9]+" | tail -n1)
   if [ -n "$track" ]
   then
     echo "$track"
