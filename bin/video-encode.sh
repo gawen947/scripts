@@ -1,23 +1,20 @@
 #!/bin/sh
-# Copyright (c) 2012 David Hauweele <david@hauweele.net>
+# Copyright (c) 2012-2019 David Hauweele <david@hauweele.net>
 
-if [ $# = 4 ]
+if [ $# -lt 4 ]
 then
+  echo "usage: $0 <input-file> <output-file> <vcodec:quality/bitrate<:tune>> <acodec:quality/bitrate> [subfix|nosub|2pass]"
+  exit 1
+else
   file="$1"
   output="$2"
   vfield="$3"
   afield="$4"
-elif [ $# = 5 ]
-then
-  file="$1"
-  output="$2"
-  extra="$3"
-  vfield="$4"
-  afield="$5"
-else
-  echo "usage: $0 <input-file> <output-file> [subfix/nosub] <vcodec:quality<:tune>> <acodec:quality>"
-  exit 1
 fi
+
+shift; shift; shift; shift
+echo $*
+exit 1
 
 if [ ! \( -f "$file" -a -r "$file" \) ]
 then
@@ -30,7 +27,7 @@ vqual=$(echo $vfield | cut -d':' -f 2)
 vcodec=$(echo $vfield | cut -d':' -f 1)
 if [ "$vqual" = "$vfield" ]
 then
-  vqual=1000
+  vqual=1200k
 fi
 
 aqual=$(echo $afield | cut -d':' -f 2)
@@ -40,8 +37,16 @@ then
   aqual=2
 fi
 
-case "$vcodec"
-  in
+# Any quality that doesn't end with a number isn't an abstract
+# quality value but a bitrate (since all bitrate are at least 
+# expressed in kbps.
+if echo "$vqual" | grep "[0-9]$" > /dev/null
+  vqual_type=quality
+else
+  vqual_type=bitrate
+fi
+
+case "$vcodec" in
   vp9|vpx)
     v_part="-codec:v libvpx -quality good -cpu-used 0 -crf 5 -qmin 0 -qmax 50 -b:v $vqual";;
   vp8)
@@ -59,18 +64,25 @@ case "$vcodec"
       exit 1
     fi
 
-    v_part="-codec:v libx264 -preset slow -crf $vqual -tune $vtune";;
+    v_part="-codec:v libx264 -preset slow -tune $vtune";;
   [hx]265)
     # X265
     #  Same as X264 basically...
     #  But we don't have tune for films.
-    v_part="-codec:v libx265 -preset slow -crf $vqual";;
+    v_part="-codec:v libx265 -preset slow";;
   copy)
     v_part="-codec:v copy";;
   *)
     echo "Unrecognised video codec \"$vcodec\", availables are vpx, copy"
     exit 1
     ;;
+esac
+
+case "$vqual_type" in
+  quality)
+    v_part="$vpart -crf $vqual";;
+  bitrate)
+    v_part="$vpart -b:v $vqual";;
 esac
 
 case "$acodec" in
@@ -86,17 +98,24 @@ case "$acodec" in
     ;;
 esac
 
-case "$extra" in
-  "") ;;
-  subfix)
-    sub_part="-c:s copy";;
-  nosub)
-    sub_part="-sn";;
-  *)
-    echo "Unrecognied extra parameter"
-    exit 1
-    ;;
-esac
+e_2pass=false
+for extra in $*
+do
+  case "$extra" in
+    "") ;;
+    subfix)
+      sub_part="-c:s copy";;
+    nosub)
+      sub_part="-sn";;
+    2pass)
+      e_2pass=true;;
+    *)
+      echo "Unrecognied extra parameter"
+      exit 1
+      ;;
+  esac
+done
+
 
 infile="$file"
 outfile="$output"
@@ -107,16 +126,68 @@ encfile=$(mktemp -u "$outnoext.encoding.XXXXXXXXXX")
 rm -f "$encfile"
 encfile="$encfile.mkv"
 
-cmd="ffmpeg -i \"$infile\" $sub_part -map 0 $v_part $a_part \"$encfile\""
-echo $cmd
-eval $cmd < /dev/null
-if [ "$?" = 0 ]
+if $e_2pass
 then
+  echo "2-pass encoding"
+  echo "---------------"
+  echo
+
+  pass1_file=$(mktemp -u "$outnoext.encoding.XXXXXXXXXX")
+  rm -f "$pass1_file"
+  pass1_file="$pass1_file.mkv"
+
+  pass_log=$(mktemp -u "$outnoext.encoding.XXXXXXXXXX")
+  rm -f "$pass_log"
+  pass_log="$pass_log.pass.log"
+
+  cmd_1="ffmpeg -i \"$infile\" -pass 1 -passlogfile \"$pass_log\" $sub_part -map 0 $v_part $a_part \"$pass1_file\""
+  echo "pass 1"
+  echo "------"
+  echo
+  echo $cmd
+  eval $cmd < /dev/null
+  if [ "$?" != 0 ]
+  then
+    rm -f "$pass1_file"
+    rm -f "$pass_log"
+    echo "Failed!"
+    exit 1
+  fi
+
+  cmd_2="ffmpeg -i \"$infile\" -pass 2 -passlogfile \"$pass_log\" $sub_part -map 0 $v_part $a_part \"$encfile\""
+  echo "pass 2"
+  echo "------"
+  echo
+  echo $cmd
+  eval $cmd < /dev/null
+  if [ "$?" != 0 ]
+  then
+    rm -f "$pass1_file"
+    rm -f "$pass_log"
+    rm -f "$encfile"
+    echo "Failed!"
+    exit 1
+  fi
+
+  rm -f "$pass1_file"
+  rm -f "$pass_log"
   mv "$encfile" "$outfile"
 else
-  rm "$encfile"
-  echo "Failed!"
-  exit 1
+  echo "1-pass encoding"
+  echo "---------------"
+  echo
+
+  cmd="ffmpeg -i \"$infile\" $sub_part -map 0 $v_part $a_part \"$encfile\""
+  echo $cmd
+  eval $cmd < /dev/null
+  if [ "$?" = 0 ]
+  then
+    mv "$encfile" "$outfile"
+  else
+    rm -f "$encfile"
+    echo "Failed!"
+    exit 1
+  fi
 fi
 
 exit 0
