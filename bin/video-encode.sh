@@ -13,8 +13,6 @@ else
 fi
 
 shift; shift; shift; shift
-echo $*
-exit 1
 
 if [ ! \( -f "$file" -a -r "$file" \) ]
 then
@@ -41,6 +39,7 @@ fi
 # quality value but a bitrate (since all bitrate are at least 
 # expressed in kbps.
 if echo "$vqual" | grep "[0-9]$" > /dev/null
+then
   vqual_type=quality
 else
   vqual_type=bitrate
@@ -144,8 +143,8 @@ then
   echo "pass 1"
   echo "------"
   echo
-  echo $cmd
-  eval $cmd < /dev/null
+  echo $cmd_1
+  eval $cmd_1 < /dev/null
   if [ "$?" != 0 ]
   then
     rm -f "$pass1_file"
@@ -158,8 +157,8 @@ then
   echo "pass 2"
   echo "------"
   echo
-  echo $cmd
-  eval $cmd < /dev/null
+  echo $cmd_2
+  eval $cmd_2 < /dev/null
   if [ "$?" != 0 ]
   then
     rm -f "$pass1_file"
@@ -170,7 +169,7 @@ then
   fi
 
   rm -f "$pass1_file"
-  rm -f "$pass_log"
+  rm -f "$pass_log"*
   mv "$encfile" "$outfile"
 else
   echo "1-pass encoding"
