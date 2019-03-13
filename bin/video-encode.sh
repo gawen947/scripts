@@ -79,9 +79,9 @@ esac
 
 case "$vqual_type" in
   quality)
-    v_part="$vpart -crf $vqual";;
+    v_part="$v_part -crf $vqual";;
   bitrate)
-    v_part="$vpart -b:v $vqual";;
+    v_part="$v_part -b:v $vqual";;
 esac
 
 case "$acodec" in
