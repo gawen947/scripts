@@ -187,7 +187,7 @@ cmd_openvpn() {
   echo "127.0.0.1" >> "$tun_ip"
 
   # Drop all tcp connections that do not origin from openvpn.
-  tcpdrop -la | grep -vf "$tun_ip" | sudo sh
+  tcpdrop -la | grep -vwf "$tun_ip" | sudo sh
 
   rm "$tun_ip"
 
