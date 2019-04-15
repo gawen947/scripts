@@ -6,6 +6,10 @@ INHIBIT_XLOCK="/tmp/.inhibit-Xlock"
 LVDS_PORT="LVDS1"
 VGA_PORT="VGA1"
 
+PROXY_SOCKS_PID="/var/run/proxy-sock.pid"
+OPENVPN_PID="/var/run/openvpn.pid"
+FASTD_PID="/var/run/fastd.pid"
+
 if [ -r "/usr/local/etc/dock.conf" ]
 then
   . "/usr/local/etc/dock.conf"
@@ -21,11 +25,15 @@ then
   echo "  sudo          Cache sudo usage for later commands."
   echo "  vga:(on|off)  Enable or disable the VGA output."
   echo "  lvds:(on|off) Enable or disable the LVDS output."
-  echo "  iface:<name>  Change the active interface."
+  echo "  iface:<name>  Change the active interface (none to disable)."
   echo "  sleep         Switch the laptop to sleep."
   echo "  lock:(on|off) Inhibit or reenable the locking mechanism on lid state change."
   echo "  lock          Lock the screen with xscreensaver."
 
+  echo "On demand daemons:"
+  echo "  openvpn:(udp|tcp|default) Start OpenVPN using either 443 UDP, 443 TCP or default OpenVPN port."
+  echo "  fastd                     Start the fastd VPN."
+  echo "  socks                     Start the SOCKS proxy."
   exit 1
 fi
 
@@ -75,7 +83,21 @@ cmd_status() {
 
   # Ifaces
   echo -n "ifaces   : "
-  ifconfig |grep "^[a-z0-9]*:" | cut -d':' -f1 | grep -v "lo0" | grep -v "pflog0" | grep -v "tun0" | xargs echo
+  ifconfig |grep "^[a-z0-9]*:" | cut -d':' -f1 | grep -v "lo0" | grep -v "pflog0" | grep -v "tun[0-9]" | xargs echo
+
+  if [ -r "$PROXY_SOCKS_PID" ]
+  then
+    daemons="$daemons socks"
+  fi
+  if [ -r "$OPENVPN_PID" ]
+  then
+    daemons="$daemons openvpn"
+  fi
+  if [ -r "$FASTD_PID" ]
+  then
+    daemons="$daemons fastd"
+  fi
+  echo "daemons  :$daemons"
 }
 
 cmd_sudo() {
@@ -133,6 +155,59 @@ cmd_iface() {
   sudo /root/iface.sh "$1"
 }
 
+cmd_openvpn() {
+  case "$1" in
+    udp) conf="$OPENVPN_UDP";;
+    tcp) conf="$OPENVPN_TCP";;
+    default) conf="$OPENVPN";;
+    *)
+      echo "invalid command argument: expected udp, tcp or default"
+      exit 1
+  esac
+  sudo openvpn --writepid "$OPENVPN_PID" --config "$conf" &
+
+  if [ -r "$OPENVPN_PID" ]
+  then
+    echo "cannot read OpenVPN PID."
+    exit 1
+  else
+    pid=$(cat "$OPENVPN_PID")
+  fi
+
+  # List all tun IPs (for now I have no way to find out OpenVPN's tun interface).
+  tun_ip=$(mktemp)
+  tun_iface=$(ifconfig | grep tun | grep -oE "^[a-z0-9\-]+:" | sed 's/:$//g' | tr '\n' ' ')
+  for tun in $tun_iface
+  do
+    ifconfig $tun | grep -oE "inet [0-9\.]+" | sed 's/^inet //g' >> "$tun_ip"
+    ifconfig $tun | grep -oE "inet6 [0-9a-f:]+ " | sed 's/^inet6 //g' | sed 's/ $//g' >> "$tun_ip"
+  done
+  # Don't filter those IPs
+  echo "::1" >> "$tun_ip"
+  echo "127.0.0.1" >> "$tun_ip"
+
+  # Drop all tcp connections that do not origin from openvpn.
+  tcpdrop -la | grep -vf "$tun_ip" | sudo sh
+
+  rm "$tun_ip"
+
+  # Wait for openvpn to return
+  pwait "$pid"
+
+  sudo rm -f "$OPENVPN_PID" # ensure that PID file is removed when daemon quits
+}
+
+cmd_fastd() {
+  sudo fastd --pid-file "$FASTD_PID" --config "$FASTD"
+  sudo rm -f "$FASTD_PID" # ensure that PID file is removed when daemon quits
+}
+
+cmd_socks() {
+  # FIXME: The magic lies beyond...
+  sudo /root/proxy-socks.sh
+  sudo rm -f "$PROXY_SOCKS_PID" # ensure that PID file is removed when daemon quits
+}
+
 _xrandr=$(xrandr)
 sleep 1
 
@@ -147,6 +222,10 @@ do
     sleep) cmd_sleep;;
     lock:*) cmd_lock $(getarg "$1");;
     lock) cmd_lock_screen;;
+    openvpn:*) cmd_openvpn $(getarg "$1");;
+    openvpn) cmd_openvpn default;;
+    fastd) cmd_fastd;;
+    socks) cmd_socks;;
     *)
       echo "unknown command $1"
       exit 1
