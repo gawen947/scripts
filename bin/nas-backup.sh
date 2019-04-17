@@ -33,7 +33,8 @@ SITES_PATH="$CONFIG_PATH"
 HISTORY_LOCAL_BASE="$CONFIG_BASE/history"
 HISTORY_LOCAL_PATH="$HOME/$HISTORY_LOCAL_BASE"
 RSYNC="rsync"
-RSYNC_OPTIONS="-avhr --progress"
+SKIP_COMPRESS="nef/crw/cr3/cr2/3g2/3gp/3gpp/7z/aac/ace/amr/apk/appx/appxbundle/arc/arj/asf/avi/bz2/cab/crypt5/crypt7/crypt8/deb/dmg/drc/ear/gz/flac/flv/gpg/iso/jar/jp2/jpg/jpeg/lz/lzma/lzo/m4a/m4p/m4v/mkv/msi/mov/mp3/mp4/mpeg/mpg/mpv/oga/ogg/ogv/opus/png/qt/rar/rpm/rzip/s7z/sfx/svgz/tbz/tgz/tlz/txz/vob/wim/wma/wmv/xz/z/zip"
+RSYNC_OPTIONS="-avhr --progress --skip-compress=\"$SKIP_COMPRESS\""
 
 # We need some colors
 # Regular           Bold                Underline           High Intensity      BoldHigh Intens     Background          High Intensity Backgrounds
