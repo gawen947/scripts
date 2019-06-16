@@ -120,15 +120,17 @@ fix_album_cover() {
   cd "$o_pwd"
 }
 
-# Albums are any folder with a "cover.jpg" file in it.
+# Albums are any directory with a "cover.jpg" file in it.
 
 find_fifo=$(mktemp -u)
 mkfifo "$find_fifo"
 
 find "$1" -type f -name "cover.jpg" > "$find_fifo" &
 
+any_directory_checked=false
 while read cover <&3
 do
+  any_directory_checked=true
   album_path=$(dirname "$cover")
 
   echo "Checking '$album_path'."
@@ -158,5 +160,12 @@ do
     echo
   fi
 done 3< "$find_fifo"
+
+if ! $any_directory_checked
+then
+  echo "Nothing checked."
+  echo "Albums are any directory containing a 'cover.jpg' file in it."
+  echo "Maybe none of the provided directories contained such a file."
+fi
 
 rm "$find_fifo"
