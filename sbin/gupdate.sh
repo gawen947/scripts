@@ -11,6 +11,9 @@ os=$(uname -s)
 if [ -r /etc/debian_version ]
 then
   method=apt
+elif [ -r /etc/fedora_release ]
+then
+  method=dnf
 elif [ "$os" = "FreeBSD" ]
 then
   method=pkg
@@ -26,6 +29,10 @@ then
 fi
 
 case "$method" in
+  dnf)
+    dnf update
+    $CLEAN && dnf clean all
+    ;;
   apt)
     apt-get update
     apt-get upgrade
