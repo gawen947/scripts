@@ -49,8 +49,13 @@ case "$method" in
     make update
     echo
 
-    # Upgrade all locked ports
-    pkg lock -lq | while read package
+    locked=$(mktemp)
+    indexed=$(mktemp)
+
+    # Upgrade all locked port with an update
+    pkg lock -ql | sed 's/-[a-zA-Z0-9_\.,]*$//' > "$locked"
+    pkg version -UIl "<" | cut -d' ' -f1 | sed 's/-[a-zA-Z0-9_\.,]*$//' > "$indexed"
+    join "$locked" "$indexed" | while read package
     do
       origin=$(pkg query '%o' "$package")
       echo "Upgrading locked $package from $origin"
@@ -62,6 +67,7 @@ case "$method" in
       make reinstall
       pkg lock -y "$origin"
     done
+    rm -f "$locked" "$indexed"
 
     cd "$_pwd"
     ;;
