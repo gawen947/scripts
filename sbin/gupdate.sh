@@ -46,7 +46,7 @@ case "$method" in
   port)
     _pwd=$(pwd)
     cd /usr/ports
-    make update
+    portsnap fetch update
     echo
 
     locked=$(mktemp)
