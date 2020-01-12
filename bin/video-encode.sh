@@ -103,9 +103,11 @@ do
   case "$extra" in
     "") ;;
     subfix)
-      sub_part="-c:s copy";;
+      sub_part="$sub_part -c:s copy";;
     nosub)
-      sub_part="-sn";;
+      sub_part="$sub_part -sn";;
+    nodata)
+      sub_part="$sub_part -dn";;
     2pass)
       e_2pass=true;;
     *)
