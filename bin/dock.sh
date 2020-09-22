@@ -164,13 +164,15 @@ cmd_openvpn() {
       echo "invalid command argument: expected udp, tcp or default"
       exit 1
   esac
-  sudo openvpn --script-security 2 --route-up /usr/local/lib/sh/drop-non-tun-ip.sh --writepid "$OPENVPN_PID" --config "$conf"
+  openvpn_dir=$(dirname "$OPENVPN")
+  sudo sh -c "cd '$openvpn_dir' && openvpn --script-security 2 --route-up /usr/local/lib/sh/drop-non-tun-ip.sh --writepid '$OPENVPN_PID' --config '$conf'"
   sudo rm -f "$OPENVPN_PID" # ensure that PID file is removed when daemon quits
 }
 
 cmd_fastd() {
   sudo fastd --pid-file "$FASTD_PID" --config "$FASTD"
   sudo rm -f "$FASTD_PID" # ensure that PID file is removed when daemon quits
+  cd "$o_pwd"
 }
 
 cmd_socks() {
