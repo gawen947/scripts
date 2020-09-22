@@ -14,6 +14,9 @@ then
 elif [ -r /etc/fedora_release ]
 then
   method=dnf
+elif [ -r /etc/arch-release ]
+then
+  method=pacman
 elif [ "$os" = "FreeBSD" ]
 then
   method=pkg
@@ -37,6 +40,10 @@ case "$method" in
     apt-get update
     apt-get upgrade
     $CLEAN && apt-get clean
+    ;;
+  pacman)
+    pacman -Syu
+    $CLEAN && pacman -Scc
     ;;
   pkg)
     pkg update
